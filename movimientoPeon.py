@@ -30,3 +30,14 @@ def movimientosPeon(self,x,y):
 				return 2
 			
 		return -2 #FALLO EN IF-ELSEs
+	
+	
+def comerFicha(posX, posY, newX, newY)				
+		arrayTablero[posX, posY].setText("")
+		arrayTablero[newX, newY].setText("DamaBlanca")
+		arrayTablero[posX-(posX-newX), posY-(posY-newY)].setText("")
+		cont=1
+		for boton in negras:
+			if boton.objectName()==arrayTablero[posX-(posX-newX), posY-(posY-newY)].objectName():
+				negras.remove(cont)
+			cont++
