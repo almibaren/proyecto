@@ -22,42 +22,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.crearArrayBiDimensional();
         self.buttonPasar.clicked.connect(self.habilitarDeshabilitarBlancas);
 
-
-
-    def habilitarDeshabilitarBlancas(self):
-        if self.miTurno == False:
-            for button in blancas:
-                button.setEnabled(True);
-            self.miTurno=True;
-        else:
-            self.deshabilitarBotones();
-            self.miTurno=False;
-
-    def deshabilitarBotones(self):
-        for button in tablero:
-            button.setEnabled(False);
-
-    def mirarDiagonal(self,x,y):
-        diagonales=[];
-        if (x-1)<0:
-            diagonales.append("Fuera")
-            diagonales.append("Fuera")
-        else:
-            if (y-1)<0:
-                diagonales.append("Fuera");
-            else:
-                diagonales.append(arrayTablero[x-1][y-1].text())
-            if (y+1)>7:
-                diagonales.append("Fuera");
-            else:
-                diagonales.append(arrayTablero[x-1][y+1].text())
-        #print ("1" + diagonales[0] + " 2" + diagonales[1])
-        return diagonales;
-
-
-    def actualizar(self):
-        self.button33.setText("¡Acabas de hacer clic en el botón!")
-
     def crearArrayBiDimensional(self):
         arrayTablero[0][0]=self.button11
         arrayTablero[0][1]=self.button12
@@ -289,13 +253,55 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         for button in blancas:
             button.setText('DamaBlanca')
 
+    def habilitarDeshabilitarBlancas(self):
+        if self.miTurno == False:
+            for button in blancas:
+                button.setEnabled(True);
+            self.miTurno=True;
+        else:
+            self.deshabilitarBotones();
+            self.miTurno=False;
+
+    def deshabilitarBotones(self):
+        for button in tablero:
+            button.setEnabled(False);
+    def quitarColor(self):
+        for bu in arrayTablero:
+            for button in bu:
+                if button.text()=="" or button.text()=="_":
+                    button.setStyleSheet("background-color:light")
+                    button.setText("")
+
+    def mirarDiagonal(self,x,y):
+        diagonales=[];
+        if (x-1)<0:
+            diagonales.append("Fuera")
+            diagonales.append("Fuera")
+        else:
+            if (y-1)<0:
+                diagonales.append("Fuera");
+            else:
+                diagonales.append(arrayTablero[x-1][y-1].text())
+            if (y+1)>7:
+                diagonales.append("Fuera");
+            else:
+                diagonales.append(arrayTablero[x-1][y+1].text())
+        #print ("1" + diagonales[0] + " 2" + diagonales[1])
+        return diagonales;
+
+
+    def actualizar(self):
+        self.button33.setText("¡Acabas de hacer clic en el botón!")
+
 
     def posibleMovimiento(self,b):
         botones=[];
+        botones=self.buscarBoton(b);
+        x=botones[0]
+        y=botones[1]
         if b.text() == "DamaBlanca":
-            botones=self.buscarBoton(b);
-            x=botones[0]
-            y=botones[1]
+            self.posibleMovimientoX=x
+            self.posibleMovimientoY=y
             movi=self.movimientosPeon(x-1,y-1)
             print (movi);
             if movi == 0:
@@ -307,17 +313,27 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 return -1
             elif movi ==10:
                 self.siguienteMovimiento(x-3, y-3)
-                self.moverFicha(x-1, y-1, x-3, y-3)
+                self.moverFicha(x-1, y-1, x-3, y-3,True)
             elif movi == 1:
                 self.siguienteMovimiento(x-2, y-2)
-                self.moverFicha(x-1, y-1, x-2, y-2)
+                self.moverFicha(x-1, y-1, x-2, y-2,False)
             elif movi == 2:
                 self.siguienteMovimiento(x-2, y)
-                self.moverFicha(x-1, y-1, x-2, y)
-                setEnab
+                self.moverFicha(x-1, y-1, x-2, y,False)
             elif movi ==11:
                 self.siguienteMovimiento(x-2, y+1)
-                self.moverFicha(x-1, y-1, x-2, y+1)
+                self.moverFicha(x-1, y-1, x-2, y+1,True)
+            elif movi == 12:
+                self.siguienteMovimiento(x-3,y+1)
+                self.moverFicha(x-1, y-1, x-3, y+1,True)
+            elif movi == 13:
+                self.siguienteMovimiento(x-3,y-3)
+                self.moverFicha(x-1, y-1, x-3, y-3,True)
+            elif movi == 14:
+                self.siguienteMovimiento(x-3,y+1)
+                self.siguienteMovimiento(x-3,y-3)
+        elif b.text()=="_":
+            self.moverFicha(self.posibleMovimientoX-1,self.posibleMovimientoY-1,x-1,y-1,False)
 
 
     def movimientosPeon(self,x,y):
@@ -327,7 +343,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             return 0 #PUEDE AVANZAR EN LAS DOS DIRECCIONES
         elif diagonales[0]=="DamaBlanca" and diagonales[1]=="DamaBlanca":
             return -1 #NO PUEDE AVANZAR A NINGUNA POSICIÓN
-        elif diagonales[0]!="DamaBlanca" and diagonales[1]=="DamaBlanca": #NO PUEDE MOVERSE POR LA DCHA, PERO QUIZA PUEDA COMER O AVANZAR POR LA IZDA
+        elif diagonales[0]!="DamaBlanca" and (diagonales[1]=="DamaBlanca" or diagonales[1]=="Fuera"): #NO PUEDE MOVERSE POR LA DCHA, PERO QUIZA PUEDA COMER O AVANZAR POR LA IZDA
             if diagonales[0]=="DamaNegra": #ENEMIGO AL LADO, MIRAR SIGUIENTE POSICIÓN
 			#SI VACIO COMER Y MIRAR SIGUIENTE POSICIÓN, SI FUERA NO MOVER, SI NO VACIO NO MOVER
 			#FOREACH AQUI HASTA QUE RETORNE -1 CON UN CONTADOR QUE VAYA MIRANDO
@@ -340,7 +356,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                     return -1
             elif diagonales[0]=="": #PUEDE AVANZAR A LA IZDA
                 return 1
-        elif diagonales[0]=="DamaBlanca" and diagonales[1]!="DamaBlanca": #NO PUEDE MOVERSE POR LA IZDA, PERO QUIZA PUEDA COMER O AVANZAR POR LA DCHA
+        elif (diagonales[0]=="DamaBlanca" or diagonales[0]=="Fuera") and diagonales[1]!="DamaBlanca": #NO PUEDE MOVERSE POR LA IZDA, PERO QUIZA PUEDA COMER O AVANZAR POR LA DCHA
             if diagonales[1]=="DamaNegra": #ENEMIGO AL LADO, MIRAR SIGUIENTE POSICIÓN
 			#SI VACIO COMER Y MIRAR SIGUIENTE POSICIÓN, SI FUERA NO MOVER, SI NO VACIO NO MOVER
 			#FOREACH AQUI HASTA QUE RETORNE -1 CON UN CONTADOR QUE VAYA MIRANDO
@@ -372,15 +388,51 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                     #LLAMO A movimientosPeon
                 elif nuevaDiagonal[1] != "":
                     return 1
-                      
+        elif diagonales[0]=="DamaNegra" and diagonales[1]!="DamaNegra": #NO PUEDE MOVERSE POR LA DCHA, PERO QUIZA PUEDA COMER O AVANZAR POR LA IZDA
+            if diagonales[1]!="DamaBlanca": #ALIADO AL LADO, MIRAR SIGUIENTE POSICIÓN
+            #SI VACIO COMER Y MIRAR SIGUIENTE POSICIÓN, SI FUERA NO MOVER, SI NO VACIO NO MOVER
+            #FOREACH AQUI HASTA QUE RETORNE -1 CON UN CONTADOR QUE VAYA MIRANDO
+                nuevaDiagonal = self.mirarDiagonal(x-1, y-1)
+                if nuevaDiagonal[0] == "":
+                    return 13 #ONLY LEFT
+                    #PUEDO COMER...LLAMO A comerFicha, LLAMO A moverFicha
+                    #LLAMO A movimientosPeon
+                elif nuevaDiagonal[0] != "":
+                    return -1
+            elif diagonales[1]=="": #PUEDE AVANZAR A LA IZDA
+                nuevaDiagonal = self.mirarDiagonal(x-1, y+1)
+                if nuevaDiagonal[0] == "":
+                    return 13
+                    #PUEDO COMER...LLAMO A comerFicha, LLAMO A moverFicha
+                    #LLAMO A movimientosPeon
+                elif nuevaDiagonal[0] != "":
+                    return 2
+        elif diagonales[0]=="DamaNegra" and diagonales[1]=="DamaNegra":
+            diagonalIzquierda=self.mirarDiagonal(x-1,y-1);
+            diagonalDerecha=self.mirarDiagonal(x-1,y+1);
+            if diagonalIzquierda[0]=="" and diagonalDerecha[1]=="":
+                return 14 #Puede comer a los dos lados
+            elif diagonalIzquierda[0]=="":
+                return 13 #Solo puede comer a la izquierda
+            elif diagonalDerecha[1]=="":
+                return 12 #Solo puede comer a la derecha
+
         return -2 #FALLO EN IF-ELSEs
 
-    def moverFicha(self,posX, posY, newX, newY):
+    def moverFicha(self,posX, posY, newX, newY,comer):
+        print("1" + str(posX) + " 2" + str(posY))
         arrayTablero[posX][posY].setText("")
         arrayTablero[posX][posY].setEnabled(False)
         arrayTablero[newX][newY].setEnabled(True)
         arrayTablero[newX][newY].setText("DamaBlanca")
-        arrayTablero[posX-1][posY-1].setText("")
+        arrayTablero[newX][newY].setStyleSheet("background-color:light")
+        if comer:
+            if(posY-newY)<0:
+                arrayTablero[posX-1][posY+1].setText("")
+            elif(posY-newY)>0:
+                arrayTablero[posX-1][posY-1].setText("")
+        self.quitarColor()
+
         #cont=1
         #for boton in negras:
         #    if boton.objectName()==arrayTablero[posX-(posX-newX)][posY-(posY-newY)].objectName():
@@ -390,6 +442,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def siguienteMovimiento(self, x, y):
         arrayTablero[x][y].setEnabled(True)
         arrayTablero[x][y].setStyleSheet("background-color:green")
+        arrayTablero[x][y].setText("_")
 
     def buscarBoton(self,b):
         x=1;
