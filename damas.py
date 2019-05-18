@@ -255,11 +255,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def habilitarDeshabilitarBlancas(self):
         if self.miTurno == False:
+            self.deshabilitarBotones()
             for button in blancas:
                 button.setEnabled(True);
             self.miTurno=True;
         else:
             self.deshabilitarBotones();
+            for button in negras:
+                button.setEnabled(True);
             self.miTurno=False;
 
     def deshabilitarBotones(self):
@@ -286,13 +289,23 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 diagonales.append("Fuera");
             else:
                 diagonales.append(arrayTablero[x-1][y+1].text())
-        #print ("1" + diagonales[0] + " 2" + diagonales[1])
         return diagonales;
 
-
-    def actualizar(self):
-        self.button33.setText("¡Acabas de hacer clic en el botón!")
-
+    def mirarDiagonalNegras(self,x,y):
+        diagonales=[];
+        if (x-1)<0:
+            diagonales.append("Fuera")
+            diagonales.append("Fuera")
+        else:
+            if (y-1)<0:
+                diagonales.append("Fuera");
+            else:
+                diagonales.append(arrayTablero[x+1][y-1].text())
+            if (y+1)>7:
+                diagonales.append("Fuera");
+            else:
+                diagonales.append(arrayTablero[x+1][y+1].text())
+        return diagonales;
 
     def posibleMovimiento(self,b):
         botones=[];
@@ -312,28 +325,52 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             elif movi == -1:
                 return -1
             elif movi ==10:
-                self.siguienteMovimiento(x-3, y-3)
                 self.moverFicha(x-1, y-1, x-3, y-3,True)
             elif movi == 1:
-                self.siguienteMovimiento(x-2, y-2)
                 self.moverFicha(x-1, y-1, x-2, y-2,False)
             elif movi == 2:
-                self.siguienteMovimiento(x-2, y)
                 self.moverFicha(x-1, y-1, x-2, y,False)
             elif movi ==11:
-                self.siguienteMovimiento(x-2, y+1)
                 self.moverFicha(x-1, y-1, x-2, y+1,True)
             elif movi == 12:
-                self.siguienteMovimiento(x-3,y+1)
                 self.moverFicha(x-1, y-1, x-3, y+1,True)
             elif movi == 13:
-                self.siguienteMovimiento(x-3,y-3)
                 self.moverFicha(x-1, y-1, x-3, y-3,True)
             elif movi == 14:
                 self.siguienteMovimiento(x-3,y+1)
                 self.siguienteMovimiento(x-3,y-3)
+        elif b.text()=="DamaNegra":
+            self.posibleMovimientoX=x
+            self.posibleMovimientoY=y
+            movi=self.movimientosPeonNegras(x-1,y-1)
+            print (movi);
+            if movi == 0:
+                self.siguienteMovimiento(x, y-2)
+                self.siguienteMovimiento(x, y)
+                #SE PUEDE MOVER A AMBOS LADOS, LAS HABILITAS PINTAS DE VERDE, Y SEGUN CUAL PULSE VAS A ELLA
+                #self.moverFicha(x-1,y-1,x-2,y-2)
+            elif movi == -1:
+                return -1
+            elif movi ==10:
+                self.moverFichaNegras(x-1, y-1, x+1, y-3,True)
+            elif movi == 1:
+                self.moverFichaNegras(x-1, y-1, x, y-2,False)
+            elif movi == 2:
+                self.moverFichaNegras(x-1, y-1, x, y,False)
+            elif movi ==11:
+                self.moverFichaNegras(x-1, y-1, x, y+1,True)
+            elif movi == 12:
+                self.moverFichaNegras(x-1, y-1, x+1, y+1,True)
+            elif movi == 13:
+                self.moverFichaNegras(x-1, y-1, x+1, y-3,True)
+            elif movi == 14:
+                self.siguienteMovimiento(x+1,y+1)
+                self.siguienteMovimiento(x+1,y-3)
         elif b.text()=="_":
-            self.moverFicha(self.posibleMovimientoX-1,self.posibleMovimientoY-1,x-1,y-1,False)
+            if self.miTurno:
+                self.moverFicha(self.posibleMovimientoX-1,self.posibleMovimientoY-1,x-1,y-1,False)
+            else:
+                self.moverFichaNegras(self.posibleMovimientoX-1,self.posibleMovimientoY-1,x-1,y-1,False)
 
 
     def movimientosPeon(self,x,y):
@@ -416,6 +453,93 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 return 13 #Solo puede comer a la izquierda
             elif diagonalDerecha[1]=="":
                 return 12 #Solo puede comer a la derecha
+            return -1 #No puede hacer nada
+
+        return -2 #FALLO EN IF-ELSEs
+
+
+    def movimientosPeonNegras(self,x,y):
+        diagonales = self.mirarDiagonalNegras(x,y)
+        print ("1" + diagonales[0] + " 2" + diagonales[1])
+        if diagonales[0]=="" and diagonales[1]=="":
+            return 0 #PUEDE AVANZAR EN LAS DOS DIRECCIONES
+        elif diagonales[0]=="DamaBlanca" and diagonales[1]=="DamaBlanca":
+            diagonalIzquierda=self.mirarDiagonal(x+1,y-1);
+            diagonalDerecha=self.mirarDiagonal(x+1,y+1);
+            if diagonalIzquierda[0]=="" and diagonalDerecha[1]=="":
+                return 14 #Puede comer a los dos lados
+            elif diagonalIzquierda[0]=="":
+                return 13 #Solo puede comer a la izquierda
+            elif diagonalDerecha[1]=="":
+                return 12 #Solo puede comer a la derecha
+            return -1 #No puede hacer nada
+        elif diagonales[0]!="DamaNegra" and (diagonales[1]=="DamaNegra" or diagonales[1]=="Fuera"): #NO PUEDE MOVERSE POR LA DCHA, PERO QUIZA PUEDA COMER O AVANZAR POR LA IZDA
+            if diagonales[0]=="DamaBlanca": #ENEMIGO AL LADO, MIRAR SIGUIENTE POSICIÓN
+			#SI VACIO COMER Y MIRAR SIGUIENTE POSICIÓN, SI FUERA NO MOVER, SI NO VACIO NO MOVER
+			#FOREACH AQUI HASTA QUE RETORNE -1 CON UN CONTADOR QUE VAYA MIRANDO
+                nuevaDiagonal = self.mirarDiagonal(x+1, y-1)
+                if nuevaDiagonal[0] == "":
+                    return 10
+					#PUEDO COMER...LLAMO A comerFicha, LLAMO A moverFicha
+					#LLAMO A movimientosPeon
+                elif nuevaDiagonal[0] != "":
+                    return -1
+            elif diagonales[0]=="": #PUEDE AVANZAR A LA IZDA
+                return 1
+        elif (diagonales[0]=="DamaNegra" or diagonales[0]=="Fuera") and diagonales[1]!="DamaNegra": #NO PUEDE MOVERSE POR LA IZDA, PERO QUIZA PUEDA COMER O AVANZAR POR LA DCHA
+            if diagonales[1]=="DamaBlancaç": #ENEMIGO AL LADO, MIRAR SIGUIENTE POSICIÓN
+			#SI VACIO COMER Y MIRAR SIGUIENTE POSICIÓN, SI FUERA NO MOVER, SI NO VACIO NO MOVER
+			#FOREACH AQUI HASTA QUE RETORNE -1 CON UN CONTADOR QUE VAYA MIRANDO
+                nuevaDiagonal=self.mirarDiagonal(x+1, y+1)
+                if nuevaDiagonal[1]=="":
+                    return 11
+					#PUEDO COMER...LLAMO A comerFicha, LLAMO A moverFicha
+					#LLAMO A movimientosPeon
+                elif nuevaDiagonal[1]!="":
+                    return -1
+            elif diagonales[1]=="": #PUEDE AVANZAR A LA DCHA
+                return 2
+        elif diagonales[0]!="DamaBlanca" and diagonales[1]=="DamaBlanca": #NO PUEDE MOVERSE POR LA DCHA, PERO QUIZA PUEDA COMER O AVANZAR POR LA IZDA
+            if diagonales[0]=="DamaNegra": #ALIADO AL LADO, MIRAR SIGUIENTE POSICIÓN
+            #SI VACIO COMER Y MIRAR SIGUIENTE POSICIÓN, SI FUERA NO MOVER, SI NO VACIO NO MOVER
+            #FOREACH AQUI HASTA QUE RETORNE -1 CON UN CONTADOR QUE VAYA MIRANDO
+                nuevaDiagonal = self.mirarDiagonal(x+1, y-1)
+                if nuevaDiagonal[1] == "":
+                    return 12 #ONLY RIGHT
+                    #PUEDO COMER...LLAMO A comerFicha, LLAMO A moverFicha
+                    #LLAMO A movimientosPeon
+                elif nuevaDiagonal[1] != "":
+                    return -1
+            elif diagonales[0]=="": #PUEDE AVANZAR A LA IZDA
+                nuevaDiagonal = self.mirarDiagonal(x+1, y+1)
+                print("entro")
+                if nuevaDiagonal[0] == "":
+                    return 12
+                    #PUEDO COMER...LLAMO A comerFicha, LLAMO A moverFicha
+                    #LLAMO A movimientosPeon
+                elif nuevaDiagonal[0] != "":
+                    return 1
+        elif diagonales[0]=="DamaBlanca" and diagonales[1]!="DamaBlanca": #NO PUEDE MOVERSE POR LA DCHA, PERO QUIZA PUEDA COMER O AVANZAR POR LA IZDA
+            if diagonales[1]!="DamaNegra": #ALIADO AL LADO, MIRAR SIGUIENTE POSICIÓN
+            #SI VACIO COMER Y MIRAR SIGUIENTE POSICIÓN, SI FUERA NO MOVER, SI NO VACIO NO MOVER
+            #FOREACH AQUI HASTA QUE RETORNE -1 CON UN CONTADOR QUE VAYA MIRANDO
+                nuevaDiagonal = self.mirarDiagonal(x+1, y-1)
+                if nuevaDiagonal[1] == "":
+                    return 13 #ONLY LEFT
+                    #PUEDO COMER...LLAMO A comerFicha, LLAMO A moverFicha
+                    #LLAMO A movimientosPeon
+                elif nuevaDiagonal[1] != "":
+                    return -1
+            elif diagonales[1]=="": #PUEDE AVANZAR A LA IZDA
+                nuevaDiagonal = self.mirarDiagonal(x+1, y+1)
+                if nuevaDiagonal[0] == "":
+                    return 13
+                    #PUEDO COMER...LLAMO A comerFicha, LLAMO A moverFicha
+                    #LLAMO A movimientosPeon
+                elif nuevaDiagonal[0] != "":
+                    return 2
+        elif diagonales[0]=="DamaNegra" and diagonales[1]=="DamaNegra":
+            return -1
 
         return -2 #FALLO EN IF-ELSEs
 
@@ -426,10 +550,31 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         arrayTablero[newX][newY].setEnabled(True)
         arrayTablero[newX][newY].setText("DamaBlanca")
         arrayTablero[newX][newY].setStyleSheet("background-color:light")
+        cont=1;
+        for button in blancas:
+            if button.objectName() == arrayTablero[posX-1][posY+1]:
+                del blancas[cont]
+                print("a")
+            cont = cont +1;
+        blancas.append(arrayTablero[newX][newY])
         if comer:
             if(posY-newY)<0:
                 arrayTablero[posX-1][posY+1].setText("")
             elif(posY-newY)>0:
+                arrayTablero[posX-1][posY-1].setText("")
+        self.quitarColor()
+
+    def moverFichaNegras(self,posX, posY, newX, newY,comer):
+        print("1" + str(posX) + " 2" + str(posY))
+        arrayTablero[posX][posY].setText("")
+        arrayTablero[posX][posY].setEnabled(False)
+        arrayTablero[newX][newY].setEnabled(True)
+        arrayTablero[newX][newY].setText("DamaNegra")
+        arrayTablero[newX][newY].setStyleSheet("background-color:light")
+        if comer:
+            if(posY-newY)>0:
+                arrayTablero[posX-1][posY+1].setText("")
+            elif(posY-newY)<0:
                 arrayTablero[posX-1][posY-1].setText("")
         self.quitarColor()
 
