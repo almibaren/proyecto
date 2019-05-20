@@ -10,6 +10,7 @@ for i in range(n):
     arrayTablero[i] = [0] * m
 
 
+
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self, *args, **kwargs):
         QtWidgets.QMainWindow.__init__(self, *args, **kwargs)
@@ -264,6 +265,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             for button in negras:
                 button.setEnabled(True);
             self.miTurno=False;
+        print(self.sumaHeuristica(self.convertirTablero(arrayTablero)))
 
     def deshabilitarBotones(self):
         for button in tablero:
@@ -274,6 +276,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 if button.text()=="" or button.text()=="_":
                     button.setStyleSheet("background-color:light")
                     button.setText("")
+                    button.setEnabled(False);
 
     def mirarDiagonal(self,x,y):
         diagonales=[];
@@ -290,6 +293,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             else:
                 diagonales.append(arrayTablero[x-1][y+1].text())
         return diagonales;
+
 
     def mirarDiagonalNegras(self,x,y):
         diagonales=[];
@@ -315,9 +319,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         if b.text() == "DamaBlanca":
             self.posibleMovimientoX=x
             self.posibleMovimientoY=y
-            movi=self.movimientosPeon(x-1,y-1)
+            movi=self.movimientosPeon(x-1,y-1,False,0)
             print (movi);
             if movi == 0:
+                self.comer=False;
                 self.siguienteMovimiento(x-2, y-2)
                 self.siguienteMovimiento(x-2, y)
             elif movi == -1:
@@ -335,93 +340,136 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             elif movi == 13:
                 self.moverFicha(x-1, y-1, x-3, y-3,True)
             elif movi == 14:
+                self.comer=True;
                 self.siguienteMovimiento(x-3,y+1)
                 self.siguienteMovimiento(x-3,y-3)
         elif b.text()=="DamaNegra":
             self.posibleMovimientoX=x
             self.posibleMovimientoY=y
+            print(str(x) + str(y) +"pri")
             movi=self.movimientosPeonNegras(x-1,y-1)
             print (movi);
             if movi == 0:
+                self.comer=False;
                 self.siguienteMovimiento(x, y-2)
                 self.siguienteMovimiento(x, y)
             elif movi == -1:
                 return -1
-            elif movi ==10:
+            elif movi == 10:
                 self.moverFichaNegras(x-1, y-1, x+1, y-3,True)
             elif movi == 1:
                 self.moverFichaNegras(x-1, y-1, x, y-2,False)
             elif movi == 2:
                 self.moverFichaNegras(x-1, y-1, x, y,False)
-            elif movi ==11:
+            elif movi == 11:
                 self.moverFichaNegras(x-1, y-1, x, y+1,True)
             elif movi == 12:
                 self.moverFichaNegras(x-1, y-1, x+1, y+1,True)
             elif movi == 13:
                 self.moverFichaNegras(x-1, y-1, x+1, y-3,True)
             elif movi == 14:
+                self.comer=True;
                 self.siguienteMovimiento(x+1,y+1)
                 self.siguienteMovimiento(x+1,y-3)
-        elif b.text()=="_":
+        elif b.text() == "_":
             if self.miTurno:
-                self.moverFicha(self.posibleMovimientoX-1,self.posibleMovimientoY-1,x-1,y-1,False)
+                if self.comer:
+                    self.moverFicha(self.posibleMovimientoX-1,self.posibleMovimientoY-1,x-1,y-1,True)
+                else:
+                    self.moverFicha(self.posibleMovimientoX-1,self.posibleMovimientoY-1,x-1,y-1,False)
             else:
-                self.moverFichaNegras(self.posibleMovimientoX-1,self.posibleMovimientoY-1,x-1,y-1,False)
+                if self.comer:
+                    self.moverFichaNegras(self.posibleMovimientoX-1,self.posibleMovimientoY-1,x-1,y-1,True)
+                else:
+                    self.moverFichaNegras(self.posibleMovimientoX-1,self.posibleMovimientoY-1,x-1,y-1,False)
 
 
-    def movimientosPeon(self,x,y):
-        diagonales = self.mirarDiagonal(x,y)
+    def movimientosPeon(self,x,y,minMax,tableroPeon):
+        if minMax:
+            diagonales=self.mirarDiagonalBlancasMinMax(x,y,tableroPeon)
+        else:
+            diagonales = self.mirarDiagonal(x,y)
         if diagonales[0]=="" and diagonales[1]=="":
-            return 0 
+            return 0
         elif diagonales[0]=="DamaBlanca" and diagonales[1]=="DamaBlanca":
-            return -1 
-        elif diagonales[0]!="DamaBlanca" and (diagonales[1]=="DamaBlanca" or diagonales[1]=="Fuera"): 
+            return -1
+        elif diagonales[0]!="DamaBlanca" and (diagonales[1]=="DamaBlanca" or diagonales[1]=="Fuera"):
             if diagonales[0]=="DamaNegra":
-                nuevaDiagonal = self.mirarDiagonal(x-1, y-1)
+                nuevaDiagonal=[]
+                if minMax:
+                    nuevaDiagonal=self.mirarDiagonalBlancasMinMax(x-1,y-1,tableroPeon)
+                else:
+                    nuevaDiagonal = self.mirarDiagonal(x-1,y-1)
                 if nuevaDiagonal[0] == "":
                     return 10
                 elif nuevaDiagonal[0] != "":
                     return -1
-            elif diagonales[0]=="": 
+            elif diagonales[0]=="":
                 return 1
-        elif (diagonales[0]=="DamaBlanca" or diagonales[0]=="Fuera") and diagonales[1]!="DamaBlanca": 
-            if diagonales[1]=="DamaNegra": 
-                nuevaDiagonal=self.mirarDiagonal(x-1, y+1)
+        elif (diagonales[0]=="DamaBlanca" or diagonales[0]=="Fuera") and diagonales[1]!="DamaBlanca":
+            if diagonales[1]=="DamaNegra":
+                nuevaDiagonal=[]
+                if minMax:
+                    nuevaDiagonal=self.mirarDiagonalBlancasMinMax(x-1,y+1,tableroPeon)
+                else:
+                    nuevaDiagonal = self.mirarDiagonal(x-1,y+1)
                 if nuevaDiagonal[1]=="":
                     return 11
                 elif nuevaDiagonal[1]!="":
                     return -1
-            elif diagonales[1]=="": 
+            elif diagonales[1]=="":
                 return 2
-        elif diagonales[0]!="DamaNegra" and diagonales[1]=="DamaNegra": 
-            if diagonales[0]=="DamaBlanca": 
-                nuevaDiagonal = self.mirarDiagonal(x-1, y+1)
+        elif diagonales[0]!="DamaNegra" and diagonales[1]=="DamaNegra":
+            if diagonales[0]=="DamaBlanca":
+                nuevaDiagonal=[]
+                if minMax:
+                    nuevaDiagonal=self.mirarDiagonalBlancasMinMax(x-1,y+1,tableroPeon)
+                else:
+                    nuevaDiagonal = self.mirarDiagonal(x-1,y+1)
                 if nuevaDiagonal[1] == "":
-                    return 12 
+                    return 12
                 elif nuevaDiagonal[1] != "":
                     return -1
             elif diagonales[0]=="":
-                nuevaDiagonal = self.mirarDiagonal(x-1, y+1)
+                nuevaDiagonal=[]
+                if minMax:
+                    nuevaDiagonal=self.mirarDiagonalBlancasMinMax(x-1,y+1,tableroPeon)
+                else:
+                    nuevaDiagonal = self.mirarDiagonal(x-1,y+1)
                 if nuevaDiagonal[1] == "":
                     return 12
                 elif nuevaDiagonal[1] != "":
                     return 1
         elif diagonales[0]=="DamaNegra" and diagonales[1]!="DamaNegra":
             if diagonales[1]!="DamaBlanca":
-                nuevaDiagonal = self.mirarDiagonal(x-1, y-1)
+                nuevaDiagonal=[]
+                if minMax:
+                    nuevaDiagonal=self.mirarDiagonalBlancasMinMax(x-1,y-1,tableroPeon)
+                else:
+                    nuevaDiagonal = self.mirarDiagonal(x-1,y-1)
                 if nuevaDiagonal[0] == "":
                     return 13
                 elif nuevaDiagonal[0] != "":
                     return -1
             elif diagonales[1]=="":
-                nuevaDiagonal = self.mirarDiagonal(x-1, y+1)
+                nuevaDiagonal=[]
+                if minMax:
+                    nuevaDiagonal=self.mirarDiagonalBlancasMinMax(x-1,y+1,tableroPeon)
+                else:
+                    nuevaDiagonal = self.mirarDiagonal(x-1,y+1)
                 if nuevaDiagonal[0] == "":
                     return 13
                 elif nuevaDiagonal[0] != "":
                     return 2
         elif diagonales[0]=="DamaNegra" and diagonales[1]=="DamaNegra":
-            diagonalIzquierda=self.mirarDiagonal(x-1,y-1);
-            diagonalDerecha=self.mirarDiagonal(x-1,y+1);
+            diagonalIzquierda=[]
+            diagonalDerecha=[]
+            if minMax:
+                diagonalIzquierda=self.mirarDiagonalBlancasMinMax(x-1,y-1,tableroPeon)
+                diagonalDerecha=self.mirarDiagonalBlancasMinMax(x-1,y+1,tableroPeon)
+            else:
+                diagonalIzquierda=self.mirarDiagonal(x-1,y-1);
+                diagonalDerecha=self.mirarDiagonal(x-1,y+1);
             if diagonalIzquierda[0]=="" and diagonalDerecha[1]=="":
                 return 14 #Puede comer a los dos lados
             elif diagonalIzquierda[0]=="":
@@ -430,65 +478,65 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 return 12 #Solo puede comer a la derecha
             return -1 #No puede hacer nada
 
-        return -2 
-
+        return -2
 
     def movimientosPeonNegras(self,x,y):
         diagonales = self.mirarDiagonalNegras(x,y)
+        print(str(x) + str(y));
         if diagonales[0]=="" and diagonales[1]=="":
             return 0 #PUEDE AVANZAR EN LAS DOS DIRECCIONES
         elif diagonales[0]=="DamaBlanca" and diagonales[1]=="DamaBlanca":
-            diagonalIzquierda=self.mirarDiagonalNegras(x,y-1);
-            diagonalDerecha=self.mirarDiagonalNegras(x+1,y);
+            diagonalIzquierda=self.mirarDiagonalNegras(x+1,y-1);
+            diagonalDerecha=self.mirarDiagonalNegras(x+1,y+1);
             print(diagonalIzquierda[0] + diagonalIzquierda[1]+ str(x) + str(y))
             if diagonalIzquierda[0]=="" and diagonalDerecha[1]=="":
-                return 14 
+                return 14
             elif diagonalIzquierda[0]=="":
-                return 13 
+                return 13
             elif diagonalDerecha[1]=="":
-                return 12 
-            return -1 
+                return 12
+            return -1
         elif diagonales[0]!="DamaNegra" and (diagonales[1]=="DamaNegra" or diagonales[1]=="Fuera"):
-            if diagonales[0]=="DamaBlanca": 
-                nuevaDiagonal = self.mirarDiagonalNegras(x+1, y-2)
+            if diagonales[0]=="DamaBlanca":
+                nuevaDiagonal = self.mirarDiagonalNegras(x+1, y-1)
                 if nuevaDiagonal[0] == "":
                     return 10
                 elif nuevaDiagonal[0] != "":
                     return -1
             elif diagonales[0]=="":
                 return 1
-        elif (diagonales[0]=="DamaNegra" or diagonales[0]=="Fuera") and diagonales[1]!="DamaNegra": 
-            if diagonales[1]=="DamaBlanca": 
-                nuevaDiagonal=self.mirarDiagonalNegras(x+1, y)
+        elif (diagonales[0]=="DamaNegra" or diagonales[0]=="Fuera") and diagonales[1]!="DamaNegra":
+            if diagonales[1]=="DamaBlanca":
+                nuevaDiagonal=self.mirarDiagonalNegras(x+1, y+1)
                 if nuevaDiagonal[1]=="":
                     return 11
                 elif nuevaDiagonal[1]!="":
                     return -1
-            elif diagonales[1]=="": 
+            elif diagonales[1]=="":
                 return 2
         elif diagonales[0]!="DamaBlanca" and diagonales[1]=="DamaBlanca":
-            if diagonales[0]=="DamaNegra": 
-                nuevaDiagonal = self.mirarDiagonalNegras(x+1, y)
+            if diagonales[0]=="DamaNegra":
+                nuevaDiagonal = self.mirarDiagonalNegras(x+1, y+1)
                 if nuevaDiagonal[1] == "":
-                    return 12 
+                    return 12
                 elif nuevaDiagonal[1] != "":
                     return -1
             elif diagonales[0]=="":
-                nuevaDiagonal = self.mirarDiagonalNegras(x+1, y)
+                nuevaDiagonal = self.mirarDiagonalNegras(x+1, y+1)
                 print("entro")
                 if nuevaDiagonal[0] == "":
                     return 12
                 elif nuevaDiagonal[0] != "":
                     return 1
-        elif diagonales[0]=="DamaBlanca" and diagonales[1]!="DamaBlanca": 
-            if diagonales[1]!="DamaNegra": 
-                nuevaDiagonal = self.mirarDiagonalNegras(x+1, y-2)
+        elif diagonales[0]=="DamaBlanca" and diagonales[1]!="DamaBlanca":
+            if diagonales[1]!="DamaNegra":
+                nuevaDiagonal = self.mirarDiagonalNegras(x+1, y-1)
                 if nuevaDiagonal[1] == "":
-                    return 13 
+                    return 13
                 elif nuevaDiagonal[1] != "":
                     return -1
-            elif diagonales[1]=="": 
-                nuevaDiagonal = self.mirarDiagonalNegras(x+1, y-2)
+            elif diagonales[1]=="":
+                nuevaDiagonal = self.mirarDiagonalNegras(x+1, y-1)
                 if nuevaDiagonal[0] == "":
                     return 13
                 elif nuevaDiagonal[0] != "":
@@ -496,7 +544,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         elif diagonales[0]=="DamaNegra" and diagonales[1]=="DamaNegra":
             return -1
 
-        return -2 
+        return -2
 
     def moverFicha(self,posX, posY, newX, newY,comer):
         print("1" + str(posX) + " 2" + str(posY))
@@ -505,12 +553,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         arrayTablero[newX][newY].setEnabled(True)
         arrayTablero[newX][newY].setText("DamaBlanca")
         arrayTablero[newX][newY].setStyleSheet("background-color:light")
-        cont=1;
-        for button in blancas:
+        cont=0;
+        for button in negras:
             if button.objectName() == arrayTablero[posX-1][posY-1].objectName():
-                del blancas[cont]
+                del negras[cont]
                 print("a")
             cont = cont +1;
+        cont=0
         blancas.append(arrayTablero[newX][newY])
         if comer:
             if(posY-newY)<0:
@@ -520,24 +569,25 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.quitarColor()
 
     def moverFichaNegras(self,posX, posY, newX, newY,comer):
-        print("1" + str(posX) + " 2" + str(posY))
+        print("1-" + str(posX) + " 2-" + str(posY))
         arrayTablero[posX][posY].setText("")
         arrayTablero[posX][posY].setEnabled(False)
         arrayTablero[newX][newY].setEnabled(True)
         arrayTablero[newX][newY].setText("DamaNegra")
         arrayTablero[newX][newY].setStyleSheet("background-color:light")
-        cont=1
-        for button in negras:
+        cont=0
+        for button in blancas:
             if button.objectName() == arrayTablero[posX-1][posY-1].objectName():
-                del negras[cont]
-                print("b")
+
+                del blancas[cont]
             cont = cont +1;
-        negras.append(arrayTablero[newX][newY])
+        cont=0;
+        negras.append(arrayTablero[newX-1][newY-1])
         if comer:
             if(posY-newY)>0:
-                arrayTablero[posX-1][posY+1].setText("")
+                arrayTablero[posX+1][posY-1].setText("")
             elif(posY-newY)<0:
-                arrayTablero[posX-1][posY-1].setText("")
+                arrayTablero[posX+1][posY+1].setText("")
         self.quitarColor()
 
 
@@ -560,6 +610,74 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             y=1;
             x=x+1;
         return button;
+
+    def convertirTablero(self,tableroConvertir):
+        tableroMinMax=[0] * n
+        for i in range(n):
+            tableroMinMax[i] = [0] * m
+        x=0
+        y=0
+        for bu in tableroConvertir:
+            for button in bu:
+                if button.text() == "DamaBlanca":
+                    tableroMinMax[x][y]=1;
+                elif button.text() == "DamaNegra":
+                    tableroMinMax[x][y]=-1;
+                else:
+                    tableroMinMax[x][y]=0;
+                y=y+1
+            y=0
+            x=x+1
+        return tableroMinMax
+
+    def sumaHeuristica(self,tableroPuntuar):
+        suma=0;
+        for bu in tableroPuntuar:
+            for ficha in bu:
+                suma=suma+ficha
+        return suma;
+
+    def posiblesMovimientos(self, tableroMovimientos):
+        movimientos=[]
+        if self.turnoBlancas:
+            for fila in tableroMovimientos:
+                for columna in fila:
+                    self.movimientosPeon(fila,columna,True,tableroMovimientos)
+
+
+
+
+    def mirarDiagonalBlancasMinMax(self,x,y,tableroDiagonal):
+        diagonales=[];
+        if (x-1)<0:
+            diagonales.append("Fuera")
+            diagonales.append("Fuera")
+        else:
+            if (y-1)<0:
+                diagonales.append("Fuera");
+            else:
+                diagonales.append(tableroDiagonal[x-1][y-1].text())
+            if (y+1)>7:
+                diagonales.append("Fuera");
+            else:
+                diagonales.append(tableroDiagonal[x-1][y+1].text())
+        return diagonales;
+
+    def mirarDiagonalNegrasMinMax(self,x,y,tableroDiagonal):
+        diagonales=[];
+        if (x+1)>7:
+            diagonales.append("Fuera")
+            diagonales.append("Fuera")
+        else:
+            if (y-1)<0:
+                diagonales.append("Fuera");
+            else:
+                diagonales.append(tableroDiagonal[x+1][y-1].text())
+            if (y+1)>7:
+                diagonales.append("Fuera");
+            else:
+                diagonales.append(tableroDiagonal[x+1][y+1].text())
+        return diagonales;
 
 
 if __name__ == "__main__":
