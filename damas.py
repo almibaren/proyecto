@@ -683,7 +683,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 nuevaDiagonal=[]
                 nuevaDiagonal = self.mirarDiagonalBlancasMinMax(x-1,y+1,tableroPeonBlancasMinMax)
                 if nuevaDiagonal[1] == 0:
-                    return 12
+                    return 11
                 elif nuevaDiagonal[1] != 0:
                     return -1
             elif diagonales[0]==0:
@@ -698,14 +698,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 nuevaDiagonal=[]
                 nuevaDiagonal = self.mirarDiagonalBlancasMinMax(x-1,y-1,tableroPeonBlancasMinMax)
                 if nuevaDiagonal[0] == 0:
-                    return 13
+                    return 10
                 elif nuevaDiagonal[0] != 0:
                     return -1
             elif diagonales[1]==0:
                 nuevaDiagonal=[]
                 nuevaDiagonal = self.mirarDiagonalBlancasMinMax(x-1,y+1,tableroPeonBlancasMinMax)
                 if nuevaDiagonal[0] == 0:
-                    return 13
+                    return 10
                 elif nuevaDiagonal[0] != 0:
                     return 2
         elif diagonales[0]==-1 and diagonales[1]==-1:
@@ -716,9 +716,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             if diagonalIzquierda[0]==0 and diagonalDerecha[1]==0:
                 return 14 #Puede comer a los dos lados
             elif diagonalIzquierda[0]==0:
-                return 13 #Solo puede comer a la izquierda
+                return 10 #Solo puede comer a la izquierda
             elif diagonalDerecha[1]==0:
-                return 12 #Solo puede comer a la derecha
+                return 11 #Solo puede comer a la derecha
             return -1 #No puede hacer nada
 
     def movimientosPeonNegrasMinMax(self,x,y,tableroPeonNegrasMinMax):
@@ -733,9 +733,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             if diagonalIzquierda[0]==0 and diagonalDerecha[1]==0:
                 return 14
             elif diagonalIzquierda[0]==0:
-                return 13
+                return 10
             elif diagonalDerecha[1]==0:
-                return 12
+                return 11
             return -1
         elif diagonales[0]!=-1 and (diagonales[1]==-1 or diagonales[1]==10):
             if diagonales[0]==1:
@@ -759,26 +759,26 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             if diagonales[0]==-1:
                 nuevaDiagonal = self.mirarDiagonalNegrasMinMax(x+1, y+1,tableroPeonNegrasMinMax)
                 if nuevaDiagonal[1] == 0:
-                    return 12
+                    return 11
                 elif nuevaDiagonal[1] != 0:
                     return -1
             elif diagonales[0]==0:
                 nuevaDiagonal = self.mirarDiagonalNegrasMinMax(x+1, y+1,tableroPeonNegrasMinMax)
-                if nuevaDiagonal[0] == 0:
-                    return 12
+                if nuevaDiagonal[1] == 0:
+                    return 11
                 elif nuevaDiagonal[0] != 0:
                     return 1
         elif diagonales[0]==1 and diagonales[1]!=1:
             if diagonales[1]!=-1:
                 nuevaDiagonal = self.mirarDiagonalNegrasMinMax(x+1, y-1,tableroPeonNegrasMinMax)
-                if nuevaDiagonal[1] == 0:
-                    return 13
+                if nuevaDiagonal[0] == 0:
+                    return 10
                 elif nuevaDiagonal[1] != 0:
                     return -1
             elif diagonales[1]==0:
                 nuevaDiagonal = self.mirarDiagonalNegrasMinMax(x+1, y-1,tableroPeonNegrasMinMax)
                 if nuevaDiagonal[0] == 0:
-                    return 13
+                    return 10
                 elif nuevaDiagonal[0] != 0:
                     return 2
         elif diagonales[0]==-1 and diagonales[1]==-1:
