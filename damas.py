@@ -791,32 +791,92 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     
     def todosMovimientosBlancas(self,tableroTodos):
         movimientos=[]
+        posiciones=[]
         for filas in tableroTodos:
             for columnas in filas:
                 if columnas == 1:
-                    self.movimientoPeonBlancasMinMax(filas,columnas,tableroTodos)
+                    posiciones=self.posibleMovimientoBlancasMinMax(tableroTodos,self.movimientoPeonBlancasMinMax(filas,columnas,tableroTodos),filas,columnas)
+        for posi in posiciones:
+            self.hacerMovimientosBlancas(posi[1],posi[2],posi[3],posi[4],posi[5],tableroTodos)
                     
     def todosMovimientosNegras(self,tableroTodos):
         movimientos=[]
         for filas in tableroTodos:
             for columnas in filas:
                 if columnas == -1:
-                    self.movimientosPeonNegrasMinMax(filas,columnas,tableroTodos)
+                    posiciones=self.posibleMovimientoNegraMinMax(tableroTodos,self.movimientosPeonNegrasMinMax(filas,columnas,tableroTodos),filas,columnas)
                     
+        for posi in posiciones:
+            self.hacerMovimientosNegras(posi[1],posi[2],posi[3],posi[4],posi[5],tableroTodos)
+            
+            
     def minMax(self,tableroMinMax,profundidad,turno)
         tableros=[]
+        valores=[]
+        if profundidad == 0:
+            return self.sumaHeuristica(tableroMinMax)
         
         if turno=="Blancas":
             tableros=self.todosMovimientosBlancas(tableroMinMax)
             for tablero in tableros:
-                Max(self.minMax(tablero,profundidad-1,Negras))
+                valores.append(self.minMax(tablero,profundidad-1,Negras))
+            return min(valores)
         elif turno == "Negras":
             tableros=self.todosMovimientosNegras(tableroMinMax)
             for tablero in tableros:
-                Min(self.minMax(tablero,profundidad-1,Blancas))
-            
-            
-
+                valores.append(self.minMax(tablero,profundidad-1,Blancas))
+            return max(valores)
+        return null
+    
+    def posibleMovimientoNegrasMinMax(self,tableroPosibleMovimiento,movi,x,y):
+        posiciones=[]
+        if movi == 0:
+            posiciones.append(x-1,y-1,x, y-2,False)
+            posiciones.append(x-1,y-1,x, y,False)
+        elif movi == -1:
+            return -1
+        elif movi == 10:
+            posiciones.append(x-1, y-1, x+1, y-3,True)
+        elif movi == 1:
+            posiciones.append(x-1, y-1, x, y-2,False)
+        elif movi == 2:
+            posiciones.append(x-1, y-1, x, y,False)
+        elif movi == 11:
+            posiciones.append(x-1, y-1, x, y+1,True)
+        elif movi == 12:
+            posiciones.append(x-1, y-1, x+1, y+1,True)
+        elif movi == 13:
+            posiciones.append(x-1, y-1, x+1, y-3,True)
+        elif movi == 14:
+            posiciones.append(x-1,y-1,x+1,y+1,True)
+            posiciones.append(x-1,y-1,x+1,y-3,True)
+        return posiciones
+    
+    def posibleMovimientoBlancasMinMax(self,tableroPosibleMovimiento,movi,x,y):
+        posiciones=[];
+        if movi == 0:
+            posiciones.append(x-1,y-1,x-2, y-2,False)
+            posiciones.append(x-1,y-1,x-2, y,False)
+        elif movi == -1:
+            return -1
+        elif movi ==10:
+            posiciones.append(x-1, y-1, x-3, y-3,True)
+        elif movi == 1:
+            posiciones.append(x-1, y-1, x-2, y-2,False)
+        elif movi == 2:
+            posiciones.append(x-1, y-1, x-2, y,False)
+        elif movi ==11:
+            posiciones.append(x-1, y-1, x-3, y+1,True)
+        elif movi == 12:
+            posiciones.append(x-1, y-1, x-3, y+1,True)
+        elif movi == 13:
+            posiciones.append(x-1, y-1, x-3, y-3,True)
+        elif movi == 14:
+            self.comer=True;
+            posiciones.append(x-1,y-1,x-3,y+1,True)
+            posiciones.append(x-1,y-1,x-3,y-3,True)
+        return posiciones
+        
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
     window = MainWindow()
