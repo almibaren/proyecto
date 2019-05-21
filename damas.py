@@ -14,6 +14,7 @@ for i in range(n):
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self, *args, **kwargs):
         QtWidgets.QMainWindow.__init__(self, *args, **kwargs)
+        self.movimientosNegras=[]
         self.miTurno=False;
         self.setupUi(self)
         self.crearArraysTablero();
@@ -265,7 +266,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             for button in negras:
                 button.setEnabled(True);
             self.miTurno=False;
-        print(self.sumaHeuristica(self.convertirTablero(arrayTablero)))
+        print(self.minMax(self.convertirTablero(arrayTablero),2,"Negras"))
+        print(self.movimientosNegras)
 
     def deshabilitarBotones(self):
         for button in tablero:
@@ -319,7 +321,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         if b.text() == "DamaBlanca":
             self.posibleMovimientoX=x
             self.posibleMovimientoY=y
-            movi=self.movimientosPeon(x-1,y-1,False,0)
+            movi=self.movimientosPeon(x-1,y-1)
             print (movi);
             if movi == 0:
                 self.comer=False;
@@ -492,9 +494,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         elif diagonales[0]!="DamaBlanca" and diagonales[1]=="DamaBlanca":
             if diagonales[0]=="DamaNegra":
                 nuevaDiagonal = self.mirarDiagonalNegras(x+1, y+1)
-                if nuevaDiagonal[1] == "":
+                if nuevaDiagonal[0] == "":
                     return 12
-                elif nuevaDiagonal[1] != "":
+                elif nuevaDiagonal[0] != "":
                     return -1
             elif diagonales[0]=="":
                 nuevaDiagonal = self.mirarDiagonalNegras(x+1, y+1)
@@ -640,6 +642,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def mirarDiagonalNegrasMinMax(self,x,y,tableroDiagonal):
         diagonales=[];
+        #print(x)
+        #print(y)
         if (x+1)>7:
             diagonales.append(10)
             diagonales.append(10)
@@ -653,11 +657,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             else:
                 diagonales.append(tableroDiagonal[x+1][y+1])
         return diagonales;
-    
+
     def movimientoPeonBlancasMinMax(self,x,y,tableroPeonBlancasMinMax):
         diagonales = self.mirarDiagonalBlancasMinMax(x,y,tableroPeonBlancasMinMax)
         if diagonales[0]==0 and diagonales[1]==0:
             return 0
+        elif (diagonales[0]==1 and diagonales[1]==10) or (diagonales[1]==1 and diagonales[0]==10)or (diagonales[0]==10 and diagonales[1]==10):
+            return -1
         elif diagonales[0]==1 and diagonales[1]==1:
             return -1
         elif diagonales[0]!=1 and (diagonales[1]==1 or diagonales[1]==10):
@@ -725,13 +731,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def movimientosPeonNegrasMinMax(self,x,y,tableroPeonNegrasMinMax):
         diagonales = self.mirarDiagonalNegrasMinMax(x,y,tableroPeonNegrasMinMax)
-        print(str(x) + str(y));
+        print(str(x) + str(y) + "   " + str(diagonales[0])+ " " + str(diagonales[1]));
         if diagonales[0]==0 and diagonales[1]==0:
             return 0 #PUEDE AVANZAR EN LAS DOS DIRECCIONES
+        elif (diagonales[0]==-1 and diagonales[1]==10) or (diagonales[1]==-1 and diagonales[0]==10) or (diagonales[0]==10 and diagonales[1]==10):
+            return -1
         elif diagonales[0]==1 and diagonales[1]==1:
             diagonalIzquierda=self.mirarDiagonalNegrasMinMax(x+1,y-1,tableroPeonNegrasMinMax);
             diagonalDerecha=self.mirarDiagonalNegrasMinMax(x+1,y+1,tableroPeonNegrasMinMax);
-            print(diagonalIzquierda[0] + diagonalIzquierda[1]+ str(x) + str(y))
+            #print(diagonalIzquierda[0] + diagonalIzquierda[1]+ str(x) + str(y))
             if diagonalIzquierda[0]==0 and diagonalDerecha[1]==0:
                 return 14
             elif diagonalIzquierda[0]==0:
@@ -742,9 +750,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         elif diagonales[0]!=-1 and (diagonales[1]==-1 or diagonales[1]==10):
             if diagonales[0]==1:
                 nuevaDiagonal = self.mirarDiagonalNegrasMinMax(x+1, y-1,tableroPeonNegrasMinMax)
-                if nuevaDiagonal[0] == 1:
+                if nuevaDiagonal[0] == 0:
                     return 10
-                elif nuevaDiagonal[0] != 1:
+                elif nuevaDiagonal[0] != 0:
                     return -1
             elif diagonales[0]==0:
                 return 1
@@ -788,95 +796,143 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             return -1
 
         return -2
-    
+
     def todosMovimientosBlancas(self,tableroTodos):
-        movimientos=[]
+        tableros=[]
         posiciones=[]
+        x=0
+        y=0
         for filas in tableroTodos:
             for columnas in filas:
                 if columnas == 1:
-                    posiciones=self.posibleMovimientoBlancasMinMax(tableroTodos,self.movimientoPeonBlancasMinMax(filas,columnas,tableroTodos),filas,columnas)
-        for posi in posiciones:
-            self.hacerMovimientosBlancas(posi[1],posi[2],posi[3],posi[4],posi[5],tableroTodos)
-                    
+                    posiciones.append(self.posibleMovimientoBlancasMinMax(tableroTodos,self.movimientoPeonBlancasMinMax(x,y,tableroTodos),x,y))
+                y=y+1
+            y=0
+            x=x+1
+
+
+        return posiciones
+
     def todosMovimientosNegras(self,tableroTodos):
-        movimientos=[]
+        tableros=[]
+        posiciones=[]
+        x=0
+        y=0
         for filas in tableroTodos:
             for columnas in filas:
                 if columnas == -1:
-                    posiciones=self.posibleMovimientoNegraMinMax(tableroTodos,self.movimientosPeonNegrasMinMax(filas,columnas,tableroTodos),filas,columnas)
-                    
-        for posi in posiciones:
-            self.hacerMovimientosNegras(posi[1],posi[2],posi[3],posi[4],posi[5],tableroTodos)
-            
-            
-    def minMax(self,tableroMinMax,profundidad,turno)
+                    posiciones.append(self.posibleMovimientoNegrasMinMax(tableroTodos,self.movimientosPeonNegrasMinMax(x,y,tableroTodos),x,y))
+                y=y+1
+            y=0
+            x=x+1
+            print(x)
+        self.movimientosNegras.append(posiciones)
+        return posiciones
+
+
+    def minMax(self,tableroMinMax,profundidad,turno):
+        print(tableroMinMax)
         tableros=[]
         valores=[]
-        if profundidad == 0:
+        print("PROFUNDIDAD!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!   " + str(profundidad))
+        if profundidad <= 0:
             return self.sumaHeuristica(tableroMinMax)
-        
+
+
         if turno=="Blancas":
-            tableros=self.todosMovimientosBlancas(tableroMinMax)
+            posiciones=self.todosMovimientosBlancas(tableroMinMax)
+            tableros=[]
+            for posi in posiciones:
+                tableros.append(self.hacerMovimientosBlancas(posi[0],posi[1],posi[2],posi[3],posi[4],tableroMinMax))
+
             for tablero in tableros:
-                valores.append(self.minMax(tablero,profundidad-1,Negras))
+                valores.append(self.minMax(tablero,profundidad-1,"Negras"))
             return min(valores)
+
+
         elif turno == "Negras":
-            tableros=self.todosMovimientosNegras(tableroMinMax)
+            posiciones=self.todosMovimientosNegras(tableroMinMax)
+            tableros=[]
+            for posi in posiciones:
+                tableros.append(self.hacerMovimientosNegras(posi[0],posi[1],posi[2],posi[3],posi[4],tableroMinMax))
             for tablero in tableros:
-                valores.append(self.minMax(tablero,profundidad-1,Blancas))
+                valores.append(self.minMax(tablero,profundidad-1,"Blancas"))
             return max(valores)
-        return null
-    
+        return min(valores)
+
     def posibleMovimientoNegrasMinMax(self,tableroPosibleMovimiento,movi,x,y):
         posiciones=[]
+        posi=[]
         if movi == 0:
-            posiciones.append(x-1,y-1,x, y-2,False)
-            posiciones.append(x-1,y-1,x, y,False)
+            posiciones.extend([x,y,x+1, y-1,False])
+            posiciones.extend([x,y,x+1, y+1,False])
         elif movi == -1:
-            return -1
+            posiciones.extend([x,y,x,y,False])
         elif movi == 10:
-            posiciones.append(x-1, y-1, x+1, y-3,True)
+            posiciones.extend([x, y, x+2, y-2,True])
         elif movi == 1:
-            posiciones.append(x-1, y-1, x, y-2,False)
+            posiciones.extend([x, y, x+2, y-2,False])
         elif movi == 2:
-            posiciones.append(x-1, y-1, x, y,False)
+            posiciones.extend([x, y, x+1, y+1,False])
         elif movi == 11:
-            posiciones.append(x-1, y-1, x, y+1,True)
+            posiciones.extend([x, y, x+2, y+2,True])
         elif movi == 12:
-            posiciones.append(x-1, y-1, x+1, y+1,True)
+            posiciones.extend([x, y, x+2, y+2,True])
         elif movi == 13:
-            posiciones.append(x-1, y-1, x+1, y-3,True)
+            posiciones.extend([x, y, x+2, y-2,True])
         elif movi == 14:
-            posiciones.append(x-1,y-1,x+1,y+1,True)
-            posiciones.append(x-1,y-1,x+1,y-3,True)
+            posiciones.extend([x,y,x+2,y+2,True])
+            posiciones.extend([x,y,x+2,y-2,True])
         return posiciones
-    
+
     def posibleMovimientoBlancasMinMax(self,tableroPosibleMovimiento,movi,x,y):
         posiciones=[];
         if movi == 0:
-            posiciones.append(x-1,y-1,x-2, y-2,False)
-            posiciones.append(x-1,y-1,x-2, y,False)
+            posiciones.extend([x,y,x-1, y-1,False])
+            posiciones.extend([x,y,x-1, y+1,False])
         elif movi == -1:
-            return -1
+            posiciones.extend([x,y,x, y,False])
         elif movi ==10:
-            posiciones.append(x-1, y-1, x-3, y-3,True)
+            posiciones.extend([x, y, x-2, y-2,True])
         elif movi == 1:
-            posiciones.append(x-1, y-1, x-2, y-2,False)
+            posiciones.extend([x, y, x-1, y-1,False])
         elif movi == 2:
-            posiciones.append(x-1, y-1, x-2, y,False)
+            posiciones.extend([x, y, x-1, y+1,False])
         elif movi ==11:
-            posiciones.append(x-1, y-1, x-3, y+1,True)
+            posiciones.extend([x, y, x-2, y+2,True])
         elif movi == 12:
-            posiciones.append(x-1, y-1, x-3, y+1,True)
+            posiciones.extend([x, y, x-2, y+2,True])
         elif movi == 13:
-            posiciones.append(x-1, y-1, x-3, y-3,True)
+            posiciones.extend([x, y, x-2, y-2,True])
         elif movi == 14:
-            self.comer=True;
-            posiciones.append(x-1,y-1,x-3,y+1,True)
-            posiciones.append(x-1,y-1,x-3,y-3,True)
+            posiciones.extend([x,y,x-2,y+2,True])
+            posiciones.extend([x,y,x-2,y-2,True])
         return posiciones
-        
+
+    def hacerMovimientosBlancas(self,posX, posY, newX, newY,comer,tableroHacerMovimientos):
+        print("1" + str(posX) + " 2" + str(posY))
+        tableroHacerMovimientos[posX][posY]=0
+        tableroHacerMovimientos[newX][newY]=1
+        if comer:
+            if(posY-newY)<0:
+                tableroHacerMovimientos[posX-1][posY+1]=0
+            elif(posY-newY)>0:
+                tableroHacerMovimientos[posX-1][posY-1]=0
+        return tableroHacerMovimientos
+
+    def hacerMovimientosNegras(self,posX, posY, newX, newY,comer,tableroHacerMovimientos):
+        print("1-" + str(posX) + " 2-" + str(posY))
+        print("1-" + str(newX) + " 2-" + str(newY))
+        print(str(newY))
+        tableroHacerMovimientos[posX][posY]=0
+        tableroHacerMovimientos[newX][newY]=-1
+        if comer:
+            if(posY-newY)>0:
+                tableroHacerMovimientos[posX+1][posY-1]=0
+            elif(posY-newY)<0:
+                tableroHacerMovimientos[posX+1][posY+1]=0
+        return tableroHacerMovimientos
+
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
     window = MainWindow()
