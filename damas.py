@@ -267,7 +267,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             for button in negras:
                 button.setEnabled(True);
             self.miTurno=False;
-            print(str(self.minMax(self.convertirTablero(arrayTablero),3,"Negras")))
+            valoresMinMax=self.minMax(self.convertirTablero(arrayTablero),10,"Negras")
+            self.moverFichaNegras(valoresMinMax[1][0],valoresMinMax[1][1],valoresMinMax[1][2],valoresMinMax[1][3],valoresMinMax[1][4])
+            print(str(self.minMax(self.convertirTablero(arrayTablero),10,"Negras")))
 
     def deshabilitarBotones(self):
         for button in tablero:
@@ -688,9 +690,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 nuevaDiagonal=[]
                 nuevaDiagonal = self.mirarDiagonalBlancasMinMax(x-1,y+1,tableroPeonBlancasMinMax)
                 if nuevaDiagonal[1] == 0:
-                    return 12
+                    return 11
                 elif nuevaDiagonal[1] != 0:
-                    return 1
+                    return 2
         elif diagonales[0]==-1 and diagonales[1]!=-1:
             if diagonales[1]!=1:
                 nuevaDiagonal=[]
@@ -843,6 +845,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         if turno=="Blancas":
             posiciones=self.todosMovimientosBlancas(tableroMinMax)
+            posiciones=[resultado for resultado in posiciones if resultado != []]
+            if len(posiciones)==0:
+                return[-1000,"blancas"]
             tableros=[]
             for posi in posiciones:
                 if len(posi) > 0:
@@ -851,7 +856,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             for tablero in tableros:
                 minmax_result = self.minMax(tablero,profundidad-1,"Negras")
                 valores.append(minmax_result[0])
-            posiciones=[resultado for resultado in posiciones if resultado != []]
             best_value = min(valores)
             best_move = posiciones[valores.index(best_value)]
 
@@ -860,6 +864,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         elif turno == "Negras":
             posiciones=self.todosMovimientosNegras(tableroMinMax)
+            posiciones=[resultado for resultado in posiciones if resultado != []]
+            if len(posiciones)==0:
+                return[1000,"negras"]
             tableros=[]
             for posi in posiciones:
                 if len(posi) > 0:
@@ -869,8 +876,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             for tablero in tableros:
                 minmax_result = self.minMax(tablero,profundidad-1,"Blancas")
                 valores.append(minmax_result[0])
-            posiciones=[resultado for resultado in posiciones if resultado != []]
-            best_value = min(valores)
+            best_value = max(valores)
             best_move = posiciones[valores.index(best_value)]
             print(posiciones)
             print(valores.index(best_value))
@@ -886,7 +892,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         elif movi == 10:
             posiciones.append([x, y, x+2, y-2,True])
         elif movi == 1:
-            posiciones.append([x, y, x+2, y-2,False])
+            posiciones.append([x, y, x+1, y-1,False])
         elif movi == 2:
             posiciones.append([x, y, x+1, y+1,False])
         elif movi == 11:
