@@ -20,7 +20,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self, *args, **kwargs):
         QtWidgets.QMainWindow.__init__(self, *args, **kwargs)
         self.movimientosNegras = []
-        self.miTurno = True
+        self.miTurno = False
         self.setupUi(self)
         self.crearArraysTablero()
         self.crearFichasNegras()
@@ -28,6 +28,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.deshabilitarBotones()
         self.crearArrayBiDimensional()
         self.buttonPasar.clicked.connect(self.habilitarDeshabilitarBlancas)
+        print("COMIENZO")
 
     def crearArrayBiDimensional(self):
         arrayTablero[0][0] = self.button11
@@ -259,9 +260,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             button.setText('☖')
 
     def habilitarDeshabilitarBlancas(self):
+        print("CAMBIO DE TURNO")
+        cont=1
         if self.miTurno == False:
-            for button in tablero:
 
+            for button in blancas:
+                button.setEnabled(True)
+                print("SOY EL PEON HABILITADO " +button.text()+ " " + str(cont))
+                cont=cont+1
+            self.miTurno = True
         else:
             self.deshabilitarBotones()
             self.miTurno = False
@@ -271,8 +278,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
 
     def deshabilitarBotones(self):
-        for button in blancas:
+        cont=1
+        for button in tablero:
             button.setEnabled(False)
+            print("SOY EL BOTON " + button.text()+ " " + str(cont)+" ME HAN DESHABILITADO")
+            cont=cont+1
 
     def quitarColor(self):
         for bu in arrayTablero:
