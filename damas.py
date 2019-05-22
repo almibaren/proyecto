@@ -20,7 +20,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self, *args, **kwargs):
         QtWidgets.QMainWindow.__init__(self, *args, **kwargs)
         self.movimientosNegras = []
-        self.miTurno = False
+        self.miTurno = True
         self.setupUi(self)
         self.crearArraysTablero()
         self.crearFichasNegras()
@@ -240,6 +240,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         negras.append(self.button38)
         for button in negras:
             button.setText('☗')
+            button.setEnabled(False)
 
     def crearFichasBlancas(self):
         blancas.append(self.button61)
@@ -259,14 +260,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def habilitarDeshabilitarBlancas(self):
         if self.miTurno == False:
-            self.deshabilitarBotones()
-            for button in blancas:
-                button.setEnabled(True)
-            self.miTurno = True
+            for button in tablero:
+
         else:
             self.deshabilitarBotones()
-            for button in negras:
-                button.setEnabled(True)
             self.miTurno = False
             valoresMinMax = self.minMax(self.convertirTablero(arrayTablero), 10, "Negras",-sys.maxsize-1,sys.maxsize)
             self.moverFichaNegras(valoresMinMax[1][0], valoresMinMax[1][1], valoresMinMax[1][2], valoresMinMax[1][3],
@@ -274,7 +271,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
 
     def deshabilitarBotones(self):
-        for button in tablero:
+        for button in blancas:
             button.setEnabled(False)
 
     def quitarColor(self):
@@ -339,7 +336,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             elif movi == 2:
                 self.moverFicha(x - 1, y - 1, x - 2, y, False)
             elif movi == 11:
-                self.moverFicha(x - 1, y - 1, x - 3, y + 1, True)
+                self.moverFicha(x - 1, y - 1, x - 3, y - 3, True)
             elif movi == 12:
                 self.moverFicha(x - 1, y - 1, x - 3, y + 1, True)
             elif movi == 13:
@@ -348,6 +345,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.comer = True
                 self.siguienteMovimiento(x - 3, y + 1)
                 self.siguienteMovimiento(x - 3, y - 3)
+            print("HE EJECUTADO ESTO "+str(movi))
         elif b.text() == peonNegro:
             self.posibleMovimientoX = x
             self.posibleMovimientoY = y
@@ -392,7 +390,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             return 0
         elif (diagonales[0] == peonBlanca or diagonales[0] == damaBlanca) and (diagonales[1] == peonBlanca or diagonales[1] == damaBlanca):
             return -1
-        elif (diagonales[0] != peonBlanca or diagonales[0] == damaBlanca) and (diagonales[1] == peonBlanca or diagonales[1] == "Fuera"):
+        elif (diagonales[0] != peonBlanca or diagonales[0] != damaBlanca) and (diagonales[1] == peonBlanca or diagonales[1] == "Fuera"):
             if diagonales[0] == peonNegro:
                 nuevaDiagonal = []
                 nuevaDiagonal = self.mirarDiagonal(x - 1, y - 1)
@@ -437,7 +435,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                     return -1
             elif diagonales[1] == "":
                 nuevaDiagonal = []
-                nuevaDiagonal = self.mirarDiagonal(x - 1, y + 1)
+                nuevaDiagonal = self.mirarDiagonal(x - 1, y - 1)
                 if nuevaDiagonal[0] == "":
                     return 11
                 elif nuevaDiagonal[0] != "":
@@ -538,8 +536,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 arrayTablero[posX - 1][posY + 1].setText("")
             elif (posY - newY) > 0:
                 arrayTablero[posX - 1][posY - 1].setText("")
-        if newX == 7:
-            arrayTablero[newX][newY].setText("⛊")
+        if newX == 0:
+            arrayTablero[newX][newY].setText("⛉")
         self.quitarColor()
 
     def moverFichaNegras(self, posX, posY, newX, newY, comer):
@@ -560,8 +558,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 arrayTablero[posX + 1][posY - 1].setText("")
             elif (posY - newY) < 0:
                 arrayTablero[posX + 1][posY + 1].setText("")
-        if newX == 0:
-            arrayTablero[newX][newY].setText("⛉")
+        if newX == 7:
+            arrayTablero[newX][newY].setText("⛊")
         self.quitarColor()
 
     def siguienteMovimiento(self, x, y):
