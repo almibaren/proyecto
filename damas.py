@@ -439,7 +439,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 nuevaDiagonal = []
                 nuevaDiagonal = self.mirarDiagonal(x - 1, y + 1)
                 if nuevaDiagonal[0] == "":
-                    return 13
+                    return 11
                 elif nuevaDiagonal[0] != "":
                     return 2
         elif diagonales[0] == peonNegro and diagonales[1] == peonNegro:
