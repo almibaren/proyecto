@@ -1,43 +1,40 @@
-def movimientosPeon(self,x,y):
-        diagonales = self.mirarDiagonal(x,y)
-        if diagonales[0]=="" and diagonales[1]=="": 
-            return 0 #PUEDE AVANZAR EN LAS DOS DIRECCIONES
-		elif diagonales[0]=="DamaBlanca" and diagonales[1]=="DamaBlanca": 	
-			return -1 #NO PUEDE AVANZAR A NINGUNA POSICIÓN
-		elif diagonales[0]!="DamaBlanca" and diagonales[1]=="DamaBlanca": #NO PUEDE MOVERSE POR LA DCHA, PERO QUIZA PUEDA COMER O AVANZAR POR LA IZDA	
-			if diagonales[0]=="DamaNegra": #ENEMIGO AL LADO, MIRAR SIGUIENTE POSICIÓN
-			#SI VACIO COMER Y MIRAR SIGUIENTE POSICIÓN, SI FUERA NO MOVER, SI NO VACIO NO MOVER
-			#FOREACH AQUI HASTA QUE RETORNE -1 CON UN CONTADOR QUE VAYA MIRANDO 
-				nuevaDiagonal=self.mirarDiagonal(x-1, y-1)
-				if nuevaDiagonal[0]==""
-					#PUEDO COMER...LLAMO A comerFicha, LLAMO A moverFicha					
-					#LLAMO A movimientosPeon
-				elif nuevaDiagonal[0]!=""
-					return -1	
-			elif diagonales[0]=="": #PUEDE AVANZAR A LA IZDA
-				return 1		
-		elif diagonales[0]=="DamaBlanca" and diagonales[1]!="DamaBlanca": #NO PUEDE MOVERSE POR LA IZDA, PERO QUIZA PUEDA COMER O AVANZAR POR LA DCHA	
-			if diagonales[1]=="DamaNegra": #ENEMIGO AL LADO, MIRAR SIGUIENTE POSICIÓN
-			#SI VACIO COMER Y MIRAR SIGUIENTE POSICIÓN, SI FUERA NO MOVER, SI NO VACIO NO MOVER
-			#FOREACH AQUI HASTA QUE RETORNE -1 CON UN CONTADOR QUE VAYA MIRANDO 
-				nuevaDiagonal=self.mirarDiagonal(x-1, y+1)
-				if nuevaDiagonal[1]==""
-					#PUEDO COMER...LLAMO A comerFicha, LLAMO A moverFicha					
-					#LLAMO A movimientosPeon
-				elif nuevaDiagonal[1]!=""
-					return -1	
-			elif diagonales[1]=="": #PUEDE AVANZAR A LA DCHA
-				return 2
-			
-		return -2 #FALLO EN IF-ELSEs
-	
-	
-def comerFicha(posX, posY, newX, newY)				
-		arrayTablero[posX, posY].setText("")
-		arrayTablero[newX, newY].setText("DamaBlanca")
-		arrayTablero[posX-(posX-newX), posY-(posY-newY)].setText("")
-		cont=1
-		for boton in negras:
-			if boton.objectName()==arrayTablero[posX-(posX-newX), posY-(posY-newY)].objectName():
-				negras.remove(cont)
-			cont++
+def movimientosPeonBlancas(self,x,y):
+        diagonales = self.mirarDiagonalBlancas(x,y)
+        if diagonales[0]=="" and diagonales[1]=="": #BOTH SIDES ARE FREE
+            return 0
+		elif diagonales[0]=="" and diagonales[1]!="": #LEFT CELL IS FREE
+			return 1
+		elif diagonales[0]!="" and diagonales[1]=="": #RIGHT CELL IS FREE
+			return 2
+		elif diagonales[0]=="white" and diagonales[1]=="white": #BOTH SIDES ARE FULL, SAME PIECE
+			return -1
+		elif diagonales[0]=="black" and diagonales[1]=="white": #BOTH FULL, MAY EAT ON LEFT
+			nuevaDiagonal=[]
+			nuevaDiagonal=self.mirarDiagonalBlancas(x-1, y-1)
+			if nuevaDiagonal[0]=="":
+				return 3
+			elif nuevaDiagonal[0]!="":
+				return -1
+			return -5 #CHECK ERROR
+		elif diagonales[0]=="white" and diagonales[1]=="black": #BOTH FULL, MAY EAT ON RIGHT
+			nuevaDiagonal=[]
+			nuevaDiagonal=self.mirarDiagonalBlancas(x-1, y+1)
+			if nuevaDiagonal[1]=="":
+				return 4
+			elif nuevaDiagonal[1]!="":
+				return -1
+			return -5 #CHECK ERROR
+        elif diagonales[0]=="black" and diagonales[1]=="black": #BOTH FULL, MAY EAT ON BOTH
+			nuevaDiagonalIzq=[]
+			nuevaDiagonalDch=[]
+			nuevaDiagonalIzq=self.mirarDiagonalBlancas(x-1,y-1)
+			nuevaDiagonalDch=self.mirarDiagonalBlancas(x-1,y+1)
+			if diagonalIzquierda[0]=="" and diagonalDerecha[1]=="":
+				return 5
+			elif diagonalIzquierda[0]=="" and diagonalDerecha[1]!="":
+				return 3
+			elif diagonalIzquierda[0]!="" and diagonalDerecha[1]=="":
+				return 4
+			elif diagonalIzquierda[0]!="" and diagonalDerecha[1]!="":
+				return -1				
+		return -2 #IF-ELSE ERROR
