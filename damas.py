@@ -281,14 +281,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         cont=1
         for button in tablero:
             button.setEnabled(False)
-            print("SOY EL BOTON " + button.text()+ " " + str(cont)+" ME HAN DESHABILITADO")
             cont=cont+1
 
     def quitarColor(self):
         for bu in arrayTablero:
             for button in bu:
+                button.setStyleSheet("background-color:light")
                 if button.text() == "" or button.text() == "_":
-                    button.setStyleSheet("background-color:light")
                     button.setText("")
                     button.setEnabled(False)
 
@@ -410,7 +409,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                     return -1
             elif diagonales[0] == "":
                 return 1
-        elif (diagonales[0] == peonBlanca or diagonales[0] == "Fuera") and diagonales[1] != peonBlanca:
+        elif (diagonales[0] == peonBlanca or diagonales[0] == damaBlanca or diagonales[0] == "Fuera") and diagonales[1] != peonBlanca:
             if diagonales[1] == peonNegro:
                 nuevaDiagonal = []
                 nuevaDiagonal = self.mirarDiagonal(x - 1, y + 1)
@@ -529,11 +528,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         return -2
 
     def moverFicha(self, posX, posY, newX, newY, comer):
+        print("VENIA DE "+str(posX) + " " + str(posY) + " Y ME HE IDO A " + str(newX) + " " + str(newY))
+        self.quitarColor()
         arrayTablero[posX][posY].setText("")
         arrayTablero[posX][posY].setEnabled(False)
         arrayTablero[newX][newY].setEnabled(True)
         arrayTablero[newX][newY].setText("☖")
-        arrayTablero[newX][newY].setStyleSheet("background-color:light")
         cont = 0
         for button in negras:
             if button.objectName() == arrayTablero[posX - 1][posY - 1].objectName():
@@ -548,14 +548,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 arrayTablero[posX - 1][posY - 1].setText("")
         if newX == 0:
             arrayTablero[newX][newY].setText("⛉")
-        self.quitarColor()
 
     def moverFichaNegras(self, posX, posY, newX, newY, comer):
+        self.quitarColor()
         arrayTablero[posX][posY].setText("")
-        arrayTablero[posX][posY].setEnabled(False)
-        arrayTablero[newX][newY].setEnabled(True)
+        arrayTablero[newX][newY].setStyleSheet("background-color:yellow")
         arrayTablero[newX][newY].setText("☗")
-        arrayTablero[newX][newY].setStyleSheet("background-color:light")
         cont = 0
         for button in blancas:
             if button.objectName() == arrayTablero[posX - 1][posY - 1].objectName():
@@ -570,9 +568,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 arrayTablero[posX + 1][posY + 1].setText("")
         if newX == 7:
             arrayTablero[newX][newY].setText("⛊")
-        self.quitarColor()
+
 
     def siguienteMovimiento(self, x, y):
+        for button in blancas:
+            if button.text() != "_":
+                button.setEnabled(False)
         arrayTablero[x][y].setEnabled(True)
         arrayTablero[x][y].setStyleSheet("background-color:green")
         arrayTablero[x][y].setText("_")
