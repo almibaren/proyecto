@@ -1,5 +1,6 @@
 from ventana_ui import *
 import sys
+import copy
 
 peonNegro = "☗"
 damaNegro = "⛊"
@@ -28,7 +29,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.deshabilitarBotones()
         self.crearArrayBiDimensional()
         self.buttonPasar.clicked.connect(self.habilitarDeshabilitarBlancas)
-        self.movimientoDamasBlancas(2, 1, self.convertirTablero(arrayTablero))
 
     def crearArrayBiDimensional(self):
         arrayTablero[0][0] = self.button11
@@ -270,7 +270,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             self.deshabilitarBotones()
             self.miTurno = False
-            valoresMinMax = self.minMax(self.convertirTablero(arrayTablero), 10, "Negras", -sys.maxsize - 1,
+            valoresMinMax = self.minMax(self.convertirTablero(arrayTablero), 3, "Negras", -sys.maxsize - 1,
                                         sys.maxsize)
             self.moverFichaNegras(valoresMinMax[1][0], valoresMinMax[1][1], valoresMinMax[1][2], valoresMinMax[1][3],
                                   valoresMinMax[1][4])
@@ -343,11 +343,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             elif movi == 2:
                 self.moverFicha(x - 1, y - 1, x - 2, y, False)
             elif movi == 11:
-                self.moverFicha(x - 1, y - 1, x - 3, y - 3, True)
-            elif movi == 12:
                 self.moverFicha(x - 1, y - 1, x - 3, y + 1, True)
-            elif movi == 13:
-                self.moverFicha(x - 1, y - 1, x - 3, y - 3, True)
             elif movi == 14:
                 self.comer = True
                 self.siguienteMovimiento(x - 3, y + 1)
@@ -397,141 +393,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.moverFichaNegras(self.posibleMovimientoX - 1, self.posibleMovimientoY - 1, x - 1, y - 1, False)
 
     def movimientosPeon(self, x, y):
-        diagonales = self.mirarDiagonal(x, y)
-        if diagonales[0] == "" and diagonales[1] == "":
-            return 0
-        elif (diagonales[0] == peonBlanca or diagonales[0] == damaBlanca) and (
-                diagonales[1] == peonBlanca or diagonales[1] == damaBlanca):
-            return -1
-        elif (diagonales[0] != peonBlanca or diagonales[0] != damaBlanca) and (
-                diagonales[1] == peonBlanca or diagonales[1] == "Fuera"):
-            if diagonales[0] == peonNegro:
-                nuevaDiagonal = []
-                nuevaDiagonal = self.mirarDiagonal(x - 1, y - 1)
-                if nuevaDiagonal[0] == "":
-                    return 10
-                elif nuevaDiagonal[0] != "":
-                    return -1
-            elif diagonales[0] == "":
-                return 1
-        elif (diagonales[0] == peonBlanca or diagonales[0] == damaBlanca or diagonales[0] == "Fuera") and diagonales[
-            1] != peonBlanca:
-            if diagonales[1] == peonNegro:
-                nuevaDiagonal = []
-                nuevaDiagonal = self.mirarDiagonal(x - 1, y + 1)
-                if nuevaDiagonal[1] == "":
-                    return 11
-                elif nuevaDiagonal[1] != "":
-                    return -1
-            elif diagonales[1] == "":
-                return 2
-        elif diagonales[0] != peonNegro and diagonales[1] == peonNegro:
-            if diagonales[0] == peonBlanca:
-                nuevaDiagonal = []
-                nuevaDiagonal = self.mirarDiagonal(x - 1, y + 1)
-                if nuevaDiagonal[1] == "":
-                    return 12
-                elif nuevaDiagonal[1] != "":
-                    return -1
-            elif diagonales[0] == "":
-                nuevaDiagonal = []
-                nuevaDiagonal = self.mirarDiagonal(x - 1, y + 1)
-                if nuevaDiagonal[1] == "":
-                    return 12
-                elif nuevaDiagonal[1] != "":
-                    return 1
-        elif diagonales[0] == peonNegro and diagonales[1] != peonNegro:
-            if diagonales[1] == damaBlanca:
-                nuevaDiagonal = []
-                nuevaDiagonal = self.mirarDiagonal(x - 1, y - 1)
-                if nuevaDiagonal[0] == "":
-                    return 10
-                elif nuevaDiagonal[0] != "":
-                    return -1
-            elif diagonales[1] == "":
-                nuevaDiagonal = []
-                nuevaDiagonal = self.mirarDiagonal(x - 1, y - 1)
-                if nuevaDiagonal[0] == "":
-                    return 11
-                elif nuevaDiagonal[0] != "":
-                    return 2
-        elif diagonales[0] == peonNegro and diagonales[1] == peonNegro:
-            diagonalIzquierda = []
-            diagonalDerecha = []
-            diagonalIzquierda = self.mirarDiagonal(x - 1, y - 1)
-            diagonalDerecha = self.mirarDiagonal(x - 1, y + 1)
-            if diagonalIzquierda[0] == "" and diagonalDerecha[1] == "":
-                return 14  # Puede comer a los dos lados
-            elif diagonalIzquierda[0] == "":
-                return 13  # Solo puede comer a la izquierda
-            elif diagonalDerecha[1] == "":
-                return 12  # Solo puede comer a la derecha
-            return -1  # No puede hacer nada
-
-        return -2
-
-    def movimientosPeonNegras(self, x, y):
-        diagonales = self.mirarDiagonalNegras(x, y)
-        if diagonales[0] == "" and diagonales[1] == "":
-            return 0  # PUEDE AVANZAR EN LAS DOS DIRECCIONES
-        elif diagonales[0] == peonBlanca and diagonales[1] == peonBlanca:
-            diagonalIzquierda = self.mirarDiagonalNegras(x + 1, y - 1)
-            diagonalDerecha = self.mirarDiagonalNegras(x + 1, y + 1)
-            if diagonalIzquierda[0] == "" and diagonalDerecha[1] == "":
-                return 14
-            elif diagonalIzquierda[0] == "":
-                return 13
-            elif diagonalDerecha[1] == "":
-                return 12
-            return -1
-        elif diagonales[0] != peonNegro and (diagonales[1] == peonNegro or diagonales[1] == "Fuera"):
-            if diagonales[0] == peonBlanca:
-                nuevaDiagonal = self.mirarDiagonalNegras(x + 1, y - 1)
-                if nuevaDiagonal[0] == "":
-                    return 10
-                elif nuevaDiagonal[0] != "":
-                    return -1
-            elif diagonales[0] == "":
-                return 1
-        elif (diagonales[0] == peonNegro or diagonales[0] == "Fuera") and diagonales[1] != peonNegro:
-            if diagonales[1] == peonBlanca:
-                nuevaDiagonal = self.mirarDiagonalNegras(x + 1, y + 1)
-                if nuevaDiagonal[1] == "":
-                    return 11
-                elif nuevaDiagonal[1] != "":
-                    return -1
-            elif diagonales[1] == "":
-                return 2
-        elif diagonales[0] != peonBlanca and diagonales[1] == peonBlanca:
-            if diagonales[0] == peonNegro:
-                nuevaDiagonal = self.mirarDiagonalNegras(x + 1, y + 1)
-                if nuevaDiagonal[0] == "":
-                    return 12
-                elif nuevaDiagonal[0] != "":
-                    return -1
-            elif diagonales[0] == "":
-                nuevaDiagonal = self.mirarDiagonalNegras(x + 1, y + 1)
-                if nuevaDiagonal[0] == "":
-                    return 12
-                elif nuevaDiagonal[0] != "":
-                    return 1
-        elif diagonales[0] == peonBlanca and diagonales[1] != peonBlanca:
-            if diagonales[1] != peonNegro:
-                nuevaDiagonal = self.mirarDiagonalNegras(x + 1, y - 1)
-                if nuevaDiagonal[1] == "":
-                    return 13
-                elif nuevaDiagonal[1] != "":
-                    return -1
-            elif diagonales[1] == "":
-                nuevaDiagonal = self.mirarDiagonalNegras(x + 1, y - 1)
-                if nuevaDiagonal[0] == "":
-                    return 13
-                elif nuevaDiagonal[0] != "":
-                    return 2
-        elif diagonales[0] == peonNegro and diagonales[1] == peonNegro:
-            return -1
-
-        return -2
+        return self.movimientoPeonBlancasMinMax(x,y,self.convertirTablero(arrayTablero))
 
     def moverFicha(self, posX, posY, newX, newY, comer):
         self.quitarColor()
@@ -548,32 +410,25 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         cont = 0
         blancas.append(arrayTablero[newX][newY])
         if comer:
-            if (posY - newY) < 0:
-                arrayTablero[posX - 1][posY + 1].setText("")
-            elif (posY - newY) > 0:
-                arrayTablero[posX - 1][posY - 1].setText("")
+            arrayTablero[int((posX + newX) / 2)][int((posY + newY) / 2)].setText("")
         if newX == 0:
             arrayTablero[newX][newY].setText("⛉")
 
     def moverFichaNegras(self, posX, posY, newX, newY, comer):
         self.quitarColor()
+        arrayTablero[newX][newY].setText(arrayTablero[posX][posY].text())
         arrayTablero[posX][posY].setText("")
         arrayTablero[newX][newY].setStyleSheet("background-color:yellow")
-        arrayTablero[newX][newY].setText("☗")
         cont = 0
         for button in blancas:
             if button.objectName() == arrayTablero[posX - 1][posY - 1].objectName():
                 del blancas[cont]
             cont = cont + 1
-        cont = 0
         negras.append(arrayTablero[newX - 1][newY - 1])
         if comer:
-            if (posY - newY) > 0:
-                arrayTablero[posX + 1][posY - 1].setText("")
-            elif (posY - newY) < 0:
-                arrayTablero[posX + 1][posY + 1].setText("")
+            arrayTablero[int((posX + newX) / 2)][int((posY + newY) / 2)].setText("")
         if newX == 7:
-            arrayTablero[newX][newY].setText("⛊")
+            arrayTablero[newX][newY].setText(damaNegro)
 
     def siguienteMovimiento(self, x, y):
         for button in blancas:
@@ -610,9 +465,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                     tableroMinMax[x][y] = 1
                 elif button.text() == peonNegro:
                     tableroMinMax[x][y] = -1
-                elif button.text() == "⛊":
+                elif button.text() == damaNegro:
                     tableroMinMax[x][y] = -5
-                elif button.text() == "⛉":
+                elif button.text() == damaBlanca:
                     tableroMinMax[x][y] = 5
                 else:
                     tableroMinMax[x][y] = 0
@@ -669,280 +524,201 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         return diagonales
 
     def movimientoPeonBlancasMinMax(self, x, y, tableroPeonBlancasMinMax):
-        diagonales = self.mirarDiagonalBlancasMinMax(x, y, tableroPeonBlancasMinMax)
-        if diagonales[0] == 0 and diagonales[1] == 0:
+        diagonales = self.mirarDiagonalBlancasMinMax(x,y,tableroPeonBlancasMinMax)
+        if diagonales[0] == 0 and diagonales[1]==0:
             return 0
-        elif (diagonales[0] == 1 and diagonales[1] == 10) or (diagonales[1] == 1 and diagonales[0] == 10) or (
-                diagonales[0] == 10 and diagonales[1] == 10):
+        elif diagonales[0]==0 and (diagonales[1]==1 or diagonales[1]==5 or diagonales[1]==10):
+            return 1
+        elif (diagonales[0]==1 or diagonales[0]==5 or diagonales[0]==10) and diagonales[1]==0:
+            return 2
+        elif (diagonales[0]==1 or diagonales[0]==5 or diagonales[0]==10) and (diagonales[1]==1 or diagonales[1]==5 or diagonales[1]==10):
             return -1
-        elif diagonales[0] == 1 and diagonales[1] == 1:
-            return -1
-        elif diagonales[0] != 1 and (diagonales[1] == 1 or diagonales[1] == 10):
-            if diagonales[0] == -1:
-                nuevaDiagonal = []
-                nuevaDiagonal = self.mirarDiagonalBlancasMinMax(x - 1, y - 1, tableroPeonBlancasMinMax)
-                if nuevaDiagonal[0] == 0:
-                    return 10
-                elif nuevaDiagonal[0] != 0:
-                    return -1
-            elif diagonales[0] == 0:
+        elif diagonales[0]==0 and (diagonales[1]==-1 or diagonales[1]==-5):
+            nuevaDiagonal=self.mirarDiagonalBlancasMinMax(x-1,y+1,tableroPeonBlancasMinMax)
+            if nuevaDiagonal[1]==0:
+                return 11
+            else:
                 return 1
-        elif (diagonales[0] == 1 or diagonales[0] == 10) and diagonales[1] != 1:
-            if diagonales[1] == -1:
-                nuevaDiagonal = []
-                nuevaDiagonal = self.mirarDiagonalBlancasMinMax(x - 1, y + 1, tableroPeonBlancasMinMax)
-                if nuevaDiagonal[1] == 0:
-                    return 11
-                elif nuevaDiagonal[1] != 0:
-                    return -1
-            elif diagonales[1] == 0:
+        elif (diagonales[0]==-1 or diagonales[0]==-5) and diagonales[1]==0:
+            nuevaDiagonal = self.mirarDiagonalBlancasMinMax(x - 1, y - 1, tableroPeonBlancasMinMax)
+            if nuevaDiagonal[0]==0:
+                return 10
+            else:
                 return 2
-        elif diagonales[0] != -1 and diagonales[1] == -1:
-            if diagonales[0] == 1:
-                nuevaDiagonal = []
-                nuevaDiagonal = self.mirarDiagonalBlancasMinMax(x - 1, y + 1, tableroPeonBlancasMinMax)
-                if nuevaDiagonal[1] == 0:
-                    return 11
-                elif nuevaDiagonal[1] != 0:
-                    return -1
-            elif diagonales[0] == 0:
-                nuevaDiagonal = []
-                nuevaDiagonal = self.mirarDiagonalBlancasMinMax(x - 1, y + 1, tableroPeonBlancasMinMax)
-                if nuevaDiagonal[1] == 0:
-                    return 11
-                elif nuevaDiagonal[1] != 0:
-                    return 2
-        elif diagonales[0] == -1 and diagonales[1] != -1:
-            if diagonales[1] != 1:
-                nuevaDiagonal = []
-                nuevaDiagonal = self.mirarDiagonalBlancasMinMax(x - 1, y - 1, tableroPeonBlancasMinMax)
-                if nuevaDiagonal[0] == 0:
-                    return 10
-                elif nuevaDiagonal[0] != 0:
-                    return -1
-            elif diagonales[1] == 0:
-                nuevaDiagonal = []
-                nuevaDiagonal = self.mirarDiagonalBlancasMinMax(x - 1, y + 1, tableroPeonBlancasMinMax)
-                if nuevaDiagonal[0] == 0:
-                    return 10
-                elif nuevaDiagonal[0] != 0:
-                    return 2
-        elif diagonales[0] == -1 and diagonales[1] == -1:
-            diagonalIzquierda = []
-            diagonalDerecha = []
-            diagonalIzquierda = self.mirarDiagonalBlancasMinMax(x - 1, y - 1, tableroPeonBlancasMinMax)
-            diagonalDerecha = self.mirarDiagonalBlancasMinMax(x - 1, y + 1, tableroPeonBlancasMinMax)
-            if diagonalIzquierda[0] == 0 and diagonalDerecha[1] == 0:
-                return 14  # Puede comer a los dos lados
-            elif diagonalIzquierda[0] == 0:
-                return 10  # Solo puede comer a la izquierda
-            elif diagonalDerecha[1] == 0:
-                return 11  # Solo puede comer a la derecha
-            return -1  # No puede hacer nada
+        elif (diagonales[0]==-1 or diagonales[0]==-5) and (diagonales[1]==-1 or diagonales[1]==-5):
+            nuevaDiagonalI = self.mirarDiagonalBlancasMinMax(x - 1, y - 1, tableroPeonBlancasMinMax)
+            nuevaDiagonalD = self.mirarDiagonalBlancasMinMax(x - 1, y + 1, tableroPeonBlancasMinMax)
+            if nuevaDiagonalI[0]==0 and nuevaDiagonalD[1]==0:
+                return 14
+            elif nuevaDiagonalI[0]==0:
+                return 10
+            elif nuevaDiagonalD[1]==0:
+                return 11
+            else:
+                return -1
+        elif (diagonales[0]==1 or diagonales[0]==5 or diagonales[0]==10) and (diagonales[1]==-1 or diagonales[1]==-5):
+            nuevaDiagonal = self.mirarDiagonalBlancasMinMax(x - 1, y + 1, tableroPeonBlancasMinMax)
+            if nuevaDiagonal[1]==0:
+                return 11
+            else:
+                return -1
+        elif (diagonales[0]==-1 or diagonales[0]==-5) and (diagonales[1]==1 or diagonales[1]==5 or diagonales[1]==10):
+            nuevaDiagonales = self.mirarDiagonalBlancasMinMax(x - 1, y - 1, tableroPeonBlancasMinMax)
+            if nuevaDiagonales[0] == 0:
+                return 10
+            else:
+                return -1
+        return -2
 
     def movimientosPeonNegrasMinMax(self, x, y, tableroPeonNegrasMinMax):
         diagonales = self.mirarDiagonalNegrasMinMax(x, y, tableroPeonNegrasMinMax)
         if diagonales[0] == 0 and diagonales[1] == 0:
-            return 0  # PUEDE AVANZAR EN LAS DOS DIRECCIONES
-        elif (diagonales[0] == -1 and diagonales[1] == 10) or (diagonales[1] == -1 and diagonales[0] == 10) or (
-                diagonales[0] == 10 and diagonales[1] == 10):
+            return 0
+        elif diagonales[0] == 0 and (diagonales[1] == -1 or diagonales[1] == -5 or diagonales[1] == 10):
+            return 1
+        elif (diagonales[0] == -1 or diagonales[0] == -5 or diagonales[0] == 10) and diagonales[1] == 0:
+            return 2
+        elif (diagonales[0] == -1 or diagonales[0] == -5 or diagonales[0] == 10) and (
+                diagonales[1] == -1 or diagonales[1] == -5 or diagonales[1] == 10):
             return -1
-        elif diagonales[0] == 1 and diagonales[1] == 1:
-            diagonalIzquierda = self.mirarDiagonalNegrasMinMax(x + 1, y - 1, tableroPeonNegrasMinMax)
-            diagonalDerecha = self.mirarDiagonalNegrasMinMax(x + 1, y + 1, tableroPeonNegrasMinMax)
-            if diagonalIzquierda[0] == 0 and diagonalDerecha[1] == 0:
-                return 14
-            elif diagonalIzquierda[0] == 0:
-                return 10
-            elif diagonalDerecha[1] == 0:
+        elif diagonales[0] == 0 and (diagonales[1] == 1 or diagonales[1] == 5):
+            nuevaDiagonal = self.mirarDiagonalNegrasMinMax(x + 1, y + 1, tableroPeonNegrasMinMax)
+            if nuevaDiagonal[1] == 0:
                 return 11
-            return -1
-        elif diagonales[0] != -1 and (diagonales[1] == -1 or diagonales[1] == 10):
-            if diagonales[0] == 1:
-                nuevaDiagonal = self.mirarDiagonalNegrasMinMax(x + 1, y - 1, tableroPeonNegrasMinMax)
-                if nuevaDiagonal[0] == 0:
-                    return 10
-                elif nuevaDiagonal[0] != 0:
-                    return -1
-            elif diagonales[0] == 0:
+            else:
                 return 1
-        elif (diagonales[0] == -1 or diagonales[0] == 10) and diagonales[1] != -1:
-            if diagonales[1] == 1:
-                nuevaDiagonal = self.mirarDiagonalNegrasMinMax(x + 1, y + 1, tableroPeonNegrasMinMax)
-                if nuevaDiagonal[1] == 0:
-                    return 11
-                elif nuevaDiagonal[1] != 0:
-                    return -1
-            elif diagonales[1] == 0:
+        elif (diagonales[0] == 1 or diagonales[0] == 5) and diagonales[1] == 0:
+            nuevaDiagonal = self.mirarDiagonalNegrasMinMax(x + 1, y - 1, tableroPeonNegrasMinMax)
+            if nuevaDiagonal[0] == 0:
+                return 10
+            else:
                 return 2
-        elif diagonales[0] != 1 and diagonales[1] == 1:
-            if diagonales[0] == -1:
-                nuevaDiagonal = self.mirarDiagonalNegrasMinMax(x + 1, y + 1, tableroPeonNegrasMinMax)
-                if nuevaDiagonal[1] == 0:
-                    return 11
-                elif nuevaDiagonal[1] != 0:
-                    return -1
-            elif diagonales[0] == 0:
-                nuevaDiagonal = self.mirarDiagonalNegrasMinMax(x + 1, y + 1, tableroPeonNegrasMinMax)
-                if nuevaDiagonal[1] == 0:
-                    return 11
-                elif nuevaDiagonal[0] != 0:
-                    return 1
-        elif diagonales[0] == 1 and diagonales[1] != 1:
-            if diagonales[1] != -1:
-                nuevaDiagonal = self.mirarDiagonalNegrasMinMax(x + 1, y - 1, tableroPeonNegrasMinMax)
-                if nuevaDiagonal[0] == 0:
-                    return 10
-                elif nuevaDiagonal[1] != 0:
-                    return -1
-            elif diagonales[1] == 0:
-                nuevaDiagonal = self.mirarDiagonalNegrasMinMax(x + 1, y - 1, tableroPeonNegrasMinMax)
-                if nuevaDiagonal[0] == 0:
-                    return 10
-                elif nuevaDiagonal[0] != 0:
-                    return 2
-        elif diagonales[0] == -1 and diagonales[1] == -1:
-            return -1
-
+        elif (diagonales[0] == 1 or diagonales[0] == 5) and (diagonales[1] == 1 or diagonales[1] == 5):
+            nuevaDiagonalI = self.mirarDiagonalNegrasMinMax(x + 1, y - 1, tableroPeonNegrasMinMax)
+            nuevaDiagonalD = self.mirarDiagonalNegrasMinMax(x + 1, y + 1, tableroPeonNegrasMinMax)
+            if nuevaDiagonalI[0] == 0 and nuevaDiagonalD[1]==0:
+                return 14
+            elif nuevaDiagonalI[0] == 0:
+                return 10
+            elif nuevaDiagonalD[1] == 0:
+                return 11
+            else:
+                return -1
+        elif (diagonales[0] == -1 or diagonales[0] == -5 or diagonales[0] == 10) and (
+                diagonales[1] == 1 or diagonales[1] == 5):
+            nuevaDiagonal = self.mirarDiagonalNegrasMinMax(x + 1, y + 1, tableroPeonNegrasMinMax)
+            if nuevaDiagonal[1] == 0:
+                return 11
+            else:
+                return -1
+        elif (diagonales[0] == 1 or diagonales[0] == 5) and (
+                diagonales[1] == -1 or diagonales[1] == -5 or diagonales[1] == 10):
+            nuevaDiagonales = self.mirarDiagonalNegrasMinMax(x + 1, y - 1, tableroPeonNegrasMinMax)
+            if nuevaDiagonales[0] == 0:
+                return 10
+            else:
+                return -1
         return -2
 
     def mirarDamaBlancaAbajoMinMax(self, x, y, tableroDamaBlancaMinMax):
         diagonales = self.mirarDiagonalNegrasMinMax(x, y, tableroDamaBlancaMinMax)
         if diagonales[0] == 0 and diagonales[1] == 0:
-            return 0  # PUEDE AVANZAR EN LAS DOS DIRECCIONES
-        elif ((diagonales[0] == -1 or diagonales[0]==-5) and diagonales[1] == 10 ) or ((diagonales[1] == -1 or diagonales[1]==-5) and diagonales[0] == 10) or (
-                diagonales[0] == 10 and diagonales[1] == 10):
+            return 0
+        elif diagonales[0] == 0 and (diagonales[1] == 1 or diagonales[1] == 5 or diagonales[1] == 10):
+            return 1
+        elif (diagonales[0] == 1 or diagonales[0] == 5 or diagonales[0] == 10) and diagonales[1] == 0:
+            return 2
+        elif (diagonales[0] == 1 or diagonales[0] == 5 or diagonales[0] == 10) and (
+                diagonales[1] == 1 or diagonales[1] == 5 or diagonales[1] == 10):
             return -1
-        elif (diagonales[0] == 1 or diagonales[0]==5) and (diagonales[1] == 1 or diagonales[1]==5):
-            diagonalIzquierda = self.mirarDiagonalNegrasMinMax(x + 1, y - 1, tableroDamaBlancaMinMax)
-            diagonalDerecha = self.mirarDiagonalNegrasMinMax(x + 1, y + 1, tableroDamaBlancaMinMax)
-            if diagonalIzquierda[0] == 0 and diagonalDerecha[1] == 0:
-                return 14
-            elif diagonalIzquierda[0] == 0:
-                return 10
-            elif diagonalDerecha[1] == 0:
+        elif diagonales[0] == 0 and (diagonales[1] == -1 or diagonales[1] == -5):
+            nuevaDiagonal = self.mirarDiagonalNegrasMinMax(x + 1, y + 1, tableroDamaBlancaMinMax)
+            if nuevaDiagonal[1] == 0:
                 return 11
-            return -1
-        elif (diagonales[0] != -1 and diagonales[0]!=-5) and ((diagonales[1] == -1 or diagonales[1]==-5) or diagonales[1] == 10):
-            if (diagonales[0] == 1 or diagonales[0]==5):
-                nuevaDiagonal = self.mirarDiagonalNegrasMinMax(x + 1, y - 1, tableroDamaBlancaMinMax)
-                if nuevaDiagonal[0] == 0:
-                    return 10
-                elif nuevaDiagonal[0] != 0:
-                    return -1
-            elif diagonales[0] == 0:
+            else:
                 return 1
-        elif ((diagonales[0] == -1 or diagonales[0]==-5) or diagonales[0] == 10) and (diagonales[1] != -1 and diagonales[1]!=-5):
-            if (diagonales[1] == 1 or diagonales[1]==5):
-                nuevaDiagonal = self.mirarDiagonalNegrasMinMax(x + 1, y + 1, tableroDamaBlancaMinMax)
-                if nuevaDiagonal[1] == 0:
-                    return 11
-                elif nuevaDiagonal[1] != 0:
-                    return -1
-            elif diagonales[1] == 0:
+        elif (diagonales[0] == -1 or diagonales[0] == -5) and diagonales[1] == 0:
+            nuevaDiagonal = self.mirarDiagonalNegrasMinMax(x + 1, y - 1, tableroDamaBlancaMinMax)
+            if nuevaDiagonal[0] == 0:
+                return 10
+            else:
                 return 2
-        elif (diagonales[0] != 1 and diagonales[0]!=5) and (diagonales[1] == 1 or diagonales[1]==5):
-            if (diagonales[0] == -1 or diagonales[0]==-5):
-                nuevaDiagonal = self.mirarDiagonalNegrasMinMax(x + 1, y + 1, tableroDamaBlancaMinMax)
-                if nuevaDiagonal[1] == 0:
-                    return 11
-                elif nuevaDiagonal[1] != 0:
-                    return -1
-            elif diagonales[0] == 0:
-                nuevaDiagonal = self.mirarDiagonalNegrasMinMax(x + 1, y + 1, tableroDamaBlancaMinMax)
-                if nuevaDiagonal[1] == 0:
-                    return 11
-                elif nuevaDiagonal[0] != 0:
-                    return 1
-        elif (diagonales[0] == 1 or diagonales[0]==5) and (diagonales[1] != 1 and diagonales[1]!=5):
-            if (diagonales[1] != -1 and diagonales[1]!=-5):
-                nuevaDiagonal = self.mirarDiagonalNegrasMinMax(x + 1, y - 1, tableroDamaBlancaMinMax)
-                if nuevaDiagonal[0] == 0:
-                    return 10
-                elif nuevaDiagonal[1] != 0:
-                    return -1
-            elif diagonales[1] == 0:
-                nuevaDiagonal = self.mirarDiagonalNegrasMinMax(x + 1, y - 1, tableroDamaBlancaMinMax)
-                if nuevaDiagonal[0] == 0:
-                    return 10
-                elif nuevaDiagonal[0] != 0:
-                    return 2
-        elif (diagonales[0] == -1 or diagonales[0]==-5) and (diagonales[1] == -1 or diagonales[1]==-5):
-            return -1
-
+        elif (diagonales[0] == -1 or diagonales[0] == -5) and (diagonales[1] == -1 or diagonales[1] == -5):
+            nuevaDiagonalI = self.mirarDiagonalNegrasMinMax(x + 1, y - 1, tableroDamaBlancaMinMax)
+            nuevaDiagonalD = self.mirarDiagonalNegrasMinMax(x + 1, y + 1, tableroDamaBlancaMinMax)
+            if nuevaDiagonalI[0] == 0 and nuevaDiagonalD[1]==0:
+                return 14
+            elif nuevaDiagonalI[0] == 0:
+                return 10
+            elif nuevaDiagonalD[1] == 0:
+                return 11
+            else:
+                return -1
+        elif (diagonales[0] == 1 or diagonales[0] == 5 or diagonales[0] == 10) and (
+                diagonales[1] == -1 or diagonales[1] == -5):
+            nuevaDiagonal = self.mirarDiagonalNegrasMinMax(x + 1, y + 1, tableroDamaBlancaMinMax)
+            if nuevaDiagonal[1] == 0:
+                return 11
+            else:
+                return -1
+        elif (diagonales[0] == -1 or diagonales[0] == -5) and (
+                diagonales[1] == 1 or diagonales[1] == 5 or diagonales[1] == 10):
+            nuevaDiagonales = self.mirarDiagonalNegrasMinMax(x + 1, y - 1, tableroDamaBlancaMinMax)
+            if nuevaDiagonales[0] == 0:
+                return 10
+            else:
+                return -1
         return -2
 
     def mirarDamaNegraArribaMinMax(self, x, y, tableroDamaNegraMinMax):
         diagonales = self.mirarDiagonalBlancasMinMax(x, y, tableroDamaNegraMinMax)
         if diagonales[0] == 0 and diagonales[1] == 0:
             return 0
-        elif ((diagonales[0] == 1 or diagonales[0]==5) and diagonales[1] == 10) or ((diagonales[0] == 1 or diagonales[0]==5) and diagonales[0] == 10) or (
-                diagonales[0] == 10 and diagonales[1] == 10):
+        elif diagonales[0] == 0 and (diagonales[1] == -1 or diagonales[1] == -5 or diagonales[1] == 10):
+            return 1
+        elif (diagonales[0] == -1 or diagonales[0] == -5 or diagonales[0] == 10) and diagonales[1] == 0:
+            return 2
+        elif (diagonales[0] == -1 or diagonales[0] == -5 or diagonales[0] == 10) and (
+                diagonales[1] == -1 or diagonales[1] == -5 or diagonales[1] == 10):
             return -1
-        elif (diagonales[0] == 1 or diagonales[0]==5) and (diagonales[1] == 1 or diagonales[1]==5):
-            return -1
-        elif (diagonales[0] != 1 and diagonales[0]!=5) and ((diagonales[1] == 1 or diagonales[1]==5) or diagonales[1] == 10):
-            if (diagonales[0] == -1 or diagonales[0]==-5):
-                nuevaDiagonal = []
-                nuevaDiagonal = self.mirarDiagonalBlancasMinMax(x - 1, y - 1, tableroDamaNegraMinMax)
-                if nuevaDiagonal[0] == 0:
-                    return 10
-                elif nuevaDiagonal[0] != 0:
-                    return -1
-            elif diagonales[0] == 0:
+        elif diagonales[0] == 0 and (diagonales[1] == 1 or diagonales[1] == 5):
+            nuevaDiagonal = self.mirarDiagonalBlancasMinMax(x + 1, y + 1, tableroDamaNegraMinMax)
+            if nuevaDiagonal[1] == 0:
+                return 11
+            else:
                 return 1
-        elif ((diagonales[0] == 1 or diagonales[0]==5) or diagonales[0] == 10) and (diagonales[1] != 1 or diagonales[1]!=5):
-            if (diagonales[0] == -1 or diagonales[0]==-5):
-                nuevaDiagonal = []
-                nuevaDiagonal = self.mirarDiagonalBlancasMinMax(x - 1, y + 1, tableroDamaNegraMinMax)
-                if nuevaDiagonal[1] == 0:
-                    return 11
-                elif nuevaDiagonal[1] != 0:
-                    return -1
-            elif diagonales[1] == 0:
+        elif (diagonales[0] == 1 or diagonales[0] == 5) and diagonales[1] == 0:
+            nuevaDiagonal = self.mirarDiagonalBlancasMinMax(x + 1, y - 1, tableroDamaNegraMinMax)
+            if nuevaDiagonal[0] == 0:
+                return 10
+            else:
                 return 2
-        elif (diagonales[0] == -1 and diagonales[0]!=5) and (diagonales[1] == 1 or diagonales[1]==5):
-            if (diagonales[0] == 1 or diagonales[0]==5):
-                nuevaDiagonal = []
-                nuevaDiagonal = self.mirarDiagonalBlancasMinMax(x - 1, y + 1, tableroDamaNegraMinMax)
-                if nuevaDiagonal[1] == 0:
-                    return 11
-                elif nuevaDiagonal[1] != 0:
-                    return -1
-            elif diagonales[0] == 0:
-                nuevaDiagonal = []
-                nuevaDiagonal = self.mirarDiagonalBlancasMinMax(x - 1, y + 1, tableroDamaNegraMinMax)
-                if nuevaDiagonal[1] == 0:
-                    return 11
-                elif nuevaDiagonal[1] != 0:
-                    return 2
-        elif (diagonales[0] == -1 or diagonales[0]==-5) and (diagonales[1] != -1 and diagonales[1]!=-5):
-            if (diagonales[1] != 1 and diagonales[1]!=5):
-                nuevaDiagonal = []
-                nuevaDiagonal = self.mirarDiagonalBlancasMinMax(x - 1, y - 1, tableroDamaNegraMinMax)
-                if nuevaDiagonal[0] == 0:
-                    return 10
-                elif nuevaDiagonal[0] != 0:
-                    return -1
-            elif diagonales[1] == 0:
-                nuevaDiagonal = []
-                nuevaDiagonal = self.mirarDiagonalBlancasMinMax(x - 1, y + 1, tableroDamaNegraMinMax)
-                if nuevaDiagonal[0] == 0:
-                    return 10
-                elif nuevaDiagonal[0] != 0:
-                    return 2
-        elif (diagonales[0] == -1 or diagonales[0]==-5) and (diagonales[0] == -1 or diagonales[0]==-5):
-            diagonalIzquierda = []
-            diagonalDerecha = []
-            diagonalIzquierda = self.mirarDiagonalBlancasMinMax(x - 1, y - 1, tableroDamaNegraMinMax)
-            diagonalDerecha = self.mirarDiagonalBlancasMinMax(x - 1, y + 1, tableroDamaNegraMinMax)
-            if diagonalIzquierda[0] == 0 and diagonalDerecha[1] == 0:
-                return 14  # Puede comer a los dos lados
-            elif diagonalIzquierda[0] == 0:
-                return 10  # Solo puede comer a la izquierda
-            elif diagonalDerecha[1] == 0:
-                return 11  # Solo puede comer a la derecha
-            return -1  # No puede hacer nada
+        elif (diagonales[0] == 1 or diagonales[0] == 5) and (diagonales[1] == 1 or diagonales[1] == 5):
+            nuevaDiagonalI = self.mirarDiagonalBlancasMinMax(x + 1, y - 1, tableroDamaNegraMinMax)
+            nuevaDiagonalD = self.mirarDiagonalBlancasMinMax(x + 1, y + 1, tableroDamaNegraMinMax)
+            if nuevaDiagonalI[0] == 0 and nuevaDiagonalD[1]==0:
+                return 14
+            elif nuevaDiagonalI[0] == 0:
+                return 10
+            elif nuevaDiagonalD[1] == 0:
+                return 11
+            else:
+                return -1
+        elif (diagonales[0] == -1 or diagonales[0] == -5 or diagonales[0] == 10) and (
+                diagonales[1] == 1 or diagonales[1] == 5):
+            nuevaDiagonal = self.mirarDiagonalBlancasMinMax(x + 1, y + 1, tableroDamaNegraMinMax)
+            if nuevaDiagonal[1] == 0:
+                return 11
+            else:
+                return -1
+        elif (diagonales[0] == 1 or diagonales[0] == 5) and (
+                diagonales[1] == -1 or diagonales[1] == -5 or diagonales[1] == 10):
+            nuevaDiagonales = self.mirarDiagonalBlancasMinMax(x + 1, y - 1, tableroDamaNegraMinMax)
+            if nuevaDiagonales[0] == 0:
+                return 10
+            else:
+                return -1
+        return -2
 
     def todosMovimientosBlancas(self, tableroTodos):
         tableros = []
@@ -957,9 +733,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                                                                           self.movimientoPeonBlancasMinMax(x, y,
                                                                                                            tableroTodos),
                                                                           x, y))
+                elif columnas == 5:
+                    movimientos = self.movimientoDamasBlancas(x,y,tableroTodos)
+                    posiciones.append(movimientos)
                 y = y + 1
             y = 0
             x = x + 1
+        print(posiciones)
         for posi in posiciones:
             uno = False
             try:
@@ -985,6 +765,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                                                                          self.movimientosPeonNegrasMinMax(x, y,
                                                                                                           tableroTodos),
                                                                          x, y))
+                elif columnas == -5:
+                    movimientos = self.movimientoDamasNegras(x,y,tableroTodos)
+                    posiciones.append(movimientos)
                 y = y + 1
             y = 0
             x = x + 1
@@ -1009,13 +792,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             posiciones = self.todosMovimientosBlancas(tableroMinMax)
             posiciones = [resultado for resultado in posiciones if resultado != []]
             if len(posiciones) == 0:
-                return [-1000, "blancas", alfa, beta]
+                return [1000, "blancas", alfa, beta]
             tableros = []
             for posi in posiciones:
                 if len(posi) > 0:
                     tableros.append(
                         self.hacerMovimientosBlancas(posi[0], posi[1], posi[2], posi[3], posi[4], tableroMinMax))
 
+            tableros = [resultado for resultado in tableros if resultado != []]
             for tablero in tableros:
                 minmax_result = self.minMax(tablero, profundidad - 1, "Negras", alfa, beta)
                 valores.append(minmax_result[0])
@@ -1032,14 +816,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             posiciones = self.todosMovimientosNegras(tableroMinMax)
             posiciones = [resultado for resultado in posiciones if resultado != []]
             if len(posiciones) == 0:
-                return [1000, "negras", alfa, beta]
+                return [-1000, "negras", alfa, beta]
             tableros = []
             for posi in posiciones:
                 if len(posi) > 0:
                     tableros.append(
                         self.hacerMovimientosNegras(posi[0], posi[1], posi[2], posi[3], posi[4], tableroMinMax))
-                    # print(posi)
 
+            tableros = [resultado for resultado in tableros if resultado != []]
             for tablero in tableros:
                 minmax_result = self.minMax(tablero, profundidad - 1, "Blancas", alfa, beta)
                 valores.append(minmax_result[0])
@@ -1065,10 +849,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             posiciones.append([x, y, x + 1, y + 1, False])
         elif movi == 11:
             posiciones.append([x, y, x + 2, y + 2, True])
-        elif movi == 12:
-            posiciones.append([x, y, x + 2, y + 2, True])
-        elif movi == 13:
-            posiciones.append([x, y, x + 2, y - 2, True])
         elif movi == 14:
             posiciones.append([x, y, x + 2, y + 2, True])
             posiciones.append([x, y, x + 2, y - 2, True])
@@ -1089,34 +869,35 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             posiciones.append([x, y, x - 1, y + 1, False])
         elif movi == 11:
             posiciones.append([x, y, x - 2, y + 2, True])
-        elif movi == 12:
-            posiciones.append([x, y, x - 2, y + 2, True])
-        elif movi == 13:
-            posiciones.append([x, y, x - 2, y - 2, True])
         elif movi == 14:
             posiciones.append([x, y, x - 2, y + 2, True])
             posiciones.append([x, y, x - 2, y - 2, True])
         return posiciones
 
     def hacerMovimientosBlancas(self, posX, posY, newX, newY, comer, tableroHacerMovimientos):
-        tableroHacerMovimientos[posX][posY] = 0
-        tableroHacerMovimientos[newX][newY] = 1
+        nuevoTablero = copy.deepcopy(tableroHacerMovimientos)
+        if newX > 7 or newX < 0 or newY < 0 or newY > 7:
+            return []
+        nuevoTablero[newX][newY] = nuevoTablero[posX][posY]
+        nuevoTablero[posX][posY] = 0
+
         if comer:
-            if (posY - newY) < 0:
-                tableroHacerMovimientos[posX - 1][posY + 1] = 0
-            elif (posY - newY) > 0:
-                tableroHacerMovimientos[posX - 1][posY - 1] = 0
-        return tableroHacerMovimientos
+            nuevoTablero[int((posX + newX) / 2)][int((posY + newY) / 2)] = 0
+
+        return nuevoTablero
 
     def hacerMovimientosNegras(self, posX, posY, newX, newY, comer, tableroHacerMovimientos):
-        tableroHacerMovimientos[posX][posY] = 0
-        tableroHacerMovimientos[newX][newY] = -1
+        nuevoTablero = copy.deepcopy(tableroHacerMovimientos)
+        if newX > 7 or newX < 0 or newY < 0 or newY > 7:
+            return []
+        nuevoTablero[newX][newY] = nuevoTablero[posX][posY]
+        nuevoTablero[posX][posY] = 0
+        if newX == 7:
+            nuevoTablero[newX][newY] = -5
+
         if comer:
-            if (posY - newY) > 0:
-                tableroHacerMovimientos[posX + 1][posY - 1] = 0
-            elif (posY - newY) < 0:
-                tableroHacerMovimientos[posX + 1][posY + 1] = 0
-        return tableroHacerMovimientos
+            nuevoTablero[int((posX + newX) / 2)][int((posY + newY) / 2)] = 0
+        return nuevoTablero
 
     def movimientoDamasBlancas(self, x, y, tableroMovimientoDamasBlancas):
         cont = 0
@@ -1129,26 +910,45 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             if y-cont < 0:
                 pass
             else:
-                movimientosArribaIzquierda.append(
-                    self.movimientoPeonBlancasMinMax(i, y - cont, tableroMovimientoDamasBlancas))
+                valor=self.movimientoPeonBlancasMinMax(i, y - cont, tableroMovimientoDamasBlancas)
+                if valor != -1:
+                    movimientosArribaIzquierda.append(valor)
+                else:
+                    break
+            cont = cont + 1
+        cont = 0
+        for i in range(x, 0, -1):
             if cont + y > 7:
                 pass
             else:
-                movimientosArribaDerecha.append(
-                    self.movimientoPeonBlancasMinMax(i, y + cont, tableroMovimientoDamasBlancas))
+                valor=self.movimientoPeonBlancasMinMax(i, y + cont, tableroMovimientoDamasBlancas)
+                if valor != -1:
+                    movimientosArribaDerecha.append(valor)
+                else:
+                    break
+                print(i, y+cont)
             cont = cont + 1
         cont=0
         for i in range(x, 8):
             if y-cont < 0:
                 pass
             else:
-                movimientosAbajoIzquierda.append(
-                    self.mirarDamaBlancaAbajoMinMax(i, y - cont, tableroMovimientoDamasBlancas))
+                valor=self.mirarDamaBlancaAbajoMinMax(i, y - cont, tableroMovimientoDamasBlancas)
+                if valor != -1:
+                    movimientosAbajoIzquierda.append(valor)
+                else:
+                    break
+            cont = cont + 1
+        cont = 0
+        for i in range(x, 8):
             if cont + y > 7:
                 pass
             else:
-                movimientosAbajoDerecha.append(self.mirarDamaBlancaAbajoMinMax(i, y + cont, tableroMovimientoDamasBlancas))
-
+                valor=self.mirarDamaBlancaAbajoMinMax(i, y + cont, tableroMovimientoDamasBlancas)
+                if valor != -1:
+                    movimientosAbajoDerecha.append(valor)
+                else:
+                    break
             cont = cont + 1
         movimientos=[]
         movimientos.extend(self.convertirMovimientoArribaIzquierda(movimientosArribaIzquierda,x,y))
@@ -1158,6 +958,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         #movimientos=[self.convertirMovimientoArribaIzquierda(movimientosArribaIzquierda,x,y),self.convertirMovimientoArribaDerecha(movimientosArribaDerecha,x,y),self.convertirMovimientoAbajoIzquierda(movimientosAbajoIzquierda,x,y),self.convertirMovimientoAbajoDerecha(movimientosAbajoDerecha,x,y)]
         movimientos = [resultado for resultado in movimientos if resultado != []]
+        print(movimientos)
         return movimientos
 
     def movimientoDamasNegras(self, x, y, tableroMovimientoDamasNegras):
@@ -1168,55 +969,74 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         movimientosAbajoDerecha = []
         for i in range(x, 0, -1):
 
-            if y - cont < 0:
+            if y-cont < 0:
                 pass
             else:
-                movimientosArribaIzquierda.append(
-                    self.mirarDamaNegraArribaMinMax(i, y - cont, tableroMovimientoDamasNegras))
+                valor=self.movimientosPeonNegrasMinMax(i, y - cont, tableroMovimientoDamasNegras)
+                if valor!=-1:
+                    movimientosArribaIzquierda.append(valor)
+                else:
+                    break
+            cont = cont + 1
+        cont = 0
+        for i in range(x, 0, -1):
             if cont + y > 7:
                 pass
             else:
-                movimientosArribaDerecha.append(
-                    self.mirarDamaNegraArribaMinMax(i, y + cont, tableroMovimientoDamasNegras))
+                valor=self.movimientosPeonNegrasMinMax(i, y + cont, tableroMovimientoDamasNegras)
+                if valor!= -1:
+                    movimientosArribaDerecha.append(valor)
+                else:
+                    break
+            cont = cont + 1
+        cont=0
+        for i in range(x, 8):
+            if y-cont < 0:
+                pass
+            else:
+                valor = self.mirarDamaNegraArribaMinMax(i, y - cont, tableroMovimientoDamasNegras)
+                if valor!=-1:
+                    movimientosAbajoIzquierda.append(valor)
+                else:
+                    break
             cont = cont + 1
         cont = 0
         for i in range(x, 8):
-            if y - cont < 0:
-                pass
-            else:
-                movimientosAbajoIzquierda.append(
-                    self.movimientosPeonNegrasMinMax(i, y - cont, tableroMovimientoDamasNegras))
             if cont + y > 7:
                 pass
             else:
-                movimientosAbajoDerecha.append(
-                    self.movimientosPeonNegrasMinMax(i, y + cont, tableroMovimientoDamasNegras))
+                valor=self.mirarDamaNegraArribaMinMax(i, y + cont, tableroMovimientoDamasNegras)
+                if valor!=-1:
+                    movimientosAbajoDerecha.append(valor)
+                else:
+                    break
+                print(i, y+cont)
             cont = cont + 1
-        movimientos = []
-        movimientos.extend(self.convertirMovimientoArribaIzquierda(movimientosArribaIzquierda, x, y))
-        movimientos.extend(self.convertirMovimientoArribaDerecha(movimientosArribaDerecha, x, y))
-        movimientos.extend(self.convertirMovimientoAbajoIzquierda(movimientosAbajoIzquierda, x, y))
-        movimientos.extend(self.convertirMovimientoAbajoDerecha(movimientosAbajoDerecha, x, y))
+        movimientos=[]
+        movimientos.extend(self.convertirMovimientoArribaIzquierda(movimientosArribaIzquierda,x,y))
+        movimientos.extend(self.convertirMovimientoArribaDerecha(movimientosArribaDerecha,x,y))
+        movimientos.extend(self.convertirMovimientoAbajoIzquierda(movimientosAbajoIzquierda,x,y))
+        movimientos.extend(self.convertirMovimientoAbajoDerecha(movimientosAbajoDerecha,x,y))
 
-        # movimientos=[self.convertirMovimientoArribaIzquierda(movimientosArribaIzquierda,x,y),self.convertirMovimientoArribaDerecha(movimientosArribaDerecha,x,y),self.convertirMovimientoAbajoIzquierda(movimientosAbajoIzquierda,x,y),self.convertirMovimientoAbajoDerecha(movimientosAbajoDerecha,x,y)]
+        #movimientos=[self.convertirMovimientoArribaIzquierda(movimientosArribaIzquierda,x,y),self.convertirMovimientoArribaDerecha(movimientosArribaDerecha,x,y),self.convertirMovimientoAbajoIzquierda(movimientosAbajoIzquierda,x,y),self.convertirMovimientoAbajoDerecha(movimientosAbajoDerecha,x,y)]
         movimientos = [resultado for resultado in movimientos if resultado != []]
+        print(movimientos)
         return movimientos
+
+
     def convertirMovimientoArribaIzquierda(self, movimientoArribaIzquierda, x, y):
         comer=False
         movimientos=[]
         cont=0
         for movimiento in movimientoArribaIzquierda:
+            if movimiento!=0 and movimiento!=1 and movimiento!=14 and movimiento!=10:
+                break
             if movimiento == 0:
-                comer=False
                 movimiento = 1
-            elif movimiento == 14 or movimiento == 13:
+            elif movimiento == 14:
                 movimiento = 10
-                comer=False
-            elif movimiento == 2 or movimiento == 11 or movimiento == 12:
+            elif movimiento == 2 or movimiento == 11:
                 movimiento = -1
-                if comer:
-                    break
-                comer=True
             movimientos.extend(self.posibleMovimientoBlancasMinMax(movimientoArribaIzquierda,movimiento,x-cont,y-cont))
             cont = cont + 1
         for movimiento in movimientos:
@@ -1228,11 +1048,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         movimientos=[]
         cont=0
         for movimiento in movimientoArribaDerecha:
+            if movimiento!=0 and movimiento!=2 and movimiento!=14 and movimiento!=11:
+                break
             if movimiento == 0:
                 movimiento = 2
-            elif movimiento == 14 or movimiento == 12:
+            elif movimiento == 14:
                 movimiento = 11
-            elif movimiento == 1 or movimiento == 10 or movimiento == 13:
+            elif movimiento == 1 or movimiento == 10:
                 movimiento = -1
             movimientos.extend(self.posibleMovimientoBlancasMinMax(movimientoArribaDerecha,movimiento,x-cont,y+cont))
             cont = cont + 1
@@ -1245,11 +1067,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         movimientos=[]
         cont=0
         for movimiento in movimientoArribaIzquierda:
+            if movimiento!=0 and movimiento!=1 and movimiento!=14 and movimiento!=10:
+                break
             if movimiento == 0:
                 movimiento = 1
-            elif movimiento == 14 or movimiento == 13:
+            elif movimiento == 14:
                 movimiento = 10
-            elif movimiento == 2 or movimiento == 11 or movimiento == 12:
+            elif movimiento == 2 or movimiento == 11:
                 movimiento = -1
             movimientos.extend(self.posibleMovimientoNegrasMinMax(movimientoArribaIzquierda,movimiento,x+cont,y-cont))
             cont = cont + 1
@@ -1262,6 +1086,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         movimientos=[]
         cont=0
         for movimiento in movimientoArribaDerecha:
+            if movimiento!=0 and movimiento!=2 and movimiento!=14 and movimiento!=11:
+                break
             if movimiento == 0:
                 movimiento = 2
             elif movimiento == 14 or movimiento == 12:
