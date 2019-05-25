@@ -266,6 +266,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             for button in blancas:
                 botones=self.buscarBoton(button)
                 button.setEnabled(True)
+                self.buttonPasar.setEnabled(False)
                 print("SOY EL PEON HABILITADO " +str(botones[0])+ " " + str(botones[1]))
 
             self.miTurno = True
@@ -553,6 +554,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 arrayTablero[posX - 1][posY - 1].setText("")
         if newX == 0:
             arrayTablero[newX][newY].setText(damaBlanca)
+        self.buttonPasar.setEnabled(True)
+        for button in blancas:
+            button.setEnabled(False)
 
     def moverFichaNegras(self, posX, posY, newX, newY, comer):
         self.quitarColor()
